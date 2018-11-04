@@ -129,3 +129,56 @@
 ; (g n)は2^n
 ;(define (h n) (A 2 n))
 ; (h n)は 2^2^(n-1)らしい...(?)
+
+;practice1-11
+;再帰
+(define (rec-fun n)
+  (if (< n 3)
+    n
+    (+
+      (rec-fun (- n 1))
+      (* 2 (rec-fun (- n 2)))
+      (* 3 (rec-fun (- n 3))))))
+;(rec-fun 0) // 0
+;(rec-fun 1) // 1
+;(rec-fun 2) // 2
+;(rec-fun 3)
+;(+ (rec-fun 2) (* 2 (rec-fun 1)) (* 3 (rec-fun 0)))
+;(+ 2 (* 2 1) (* 3 0))
+;(+ 2 2 0) // 4
+;(rec-fun 4)
+;(+ (rec-fun 3) (* 2 (rec-fun 2)) (* 3 (rec-fun 1)))
+;(+ 4 (* 2 2) (* 3 1))
+;(+ 4 4 3) // 11
+;(rec-fun 5)
+;(+ (rec-fun 4) (* 2 (rec-fun 3)) (* 3 (rec-fun 2)))
+;(+ 11 (* 2 4) (* 3 2))
+;(+ 11 8 6) // 25
+;(rec-fun 6)
+;(+ (rec-fun 5) (* 2 (rec-fun 4)) (* 3 (rec-fun 3)))
+;(+ 25 (* 2 11) (* 3 4))
+;(+ 25 22 12) // 59
+
+;反復
+;ここ見たらわかった気がしたけど気のせいだった
+;http://yoshiko.hatenablog.jp/entry/2014/06/11/SICP%E8%AA%B2%E9%A1%8C1.11%E3%82%92%E3%82%82%E3%81%86%E3%81%84%E3%81%A1%E3%81%A9%E3%81%A6%E3%81%84%E3%81%AD%E3%81%84%E3%81%AB
+;nの回数分だけ値をローテーションしながら計算を反復する
+(define (fun n)
+  (fun-iter 0 1 2 n))
+(define (fun-iter a b c counter)
+  (if (= counter 0)
+    a
+    (fun-iter b c (+ c (* 2 b) (* 3 a)) (- counter 1))))
+
+;practice1-12
+(define (pascal x y)
+  (cond ((= x 1) 1)
+        ((= x y) 1)
+        (else
+          (+
+            (pascal (- x 1) (- y 1))
+            (pascal x (- y 1))))))
+
+;practice1-13
+;このあたり見たけど数学がわかりませんでした。
+;https://sicp-solutions.readthedocs.io/en/latest/docs/problem-1-13.html
