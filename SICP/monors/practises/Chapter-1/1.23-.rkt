@@ -214,3 +214,47 @@
 (display (prime? 2465 1000))
 (display (prime? 2821 1000))
 (display (prime? 6691 1000))
+
+; 1.29
+#lang racket
+(define (sum term a next b)
+  (if (> a b)
+      0
+      (+ (term a) (sum term (next a) next b))))
+
+(define (sympthon f a b n)
+  (define h (/ (- b a) n))
+  (define (y k) (f (+ a (* k h))))
+  (define (Y k) (* (y　k) (if (even? k) 4 2)))
+  (define (add-n n) (+ n 1))
+
+  (* (/ h 3.0) (+ (y 0) (sum Y 1 add-n (- n 1)) (y n))))
+
+(define (cube n) (* n n n))
+
+(display (sympthon cube 0 1 100))
+(newline)
+(display (sympthon cube 0 1 1000))
+(newline)
+(display "actual result:")
+(display (/ 1 4.0))
+
+; 1.30
+#lang racket
+(define (sum term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ result (term a)))))
+
+    (iter a 0))
+
+; test
+(define (integral f a b dx)
+  (define (add-dx x) (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b) dx))
+
+(define (cube n) (* n n n))
+
+(display (integral cube 0 1 0.0001))
+

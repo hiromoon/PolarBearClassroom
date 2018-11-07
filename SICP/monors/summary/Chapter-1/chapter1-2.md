@@ -70,7 +70,7 @@ b^4 = b^2 * B^2より、
 * Lameの定理より⼿続きのn を⼆つの⼊⼒のうちの⼩さいほうだとします。プロセスがk ス
 テップかかるとすると、下記が成り立つ。
 $$
- k=\log_{\varphi}n 
+ k=\log_9{\varphi}n 
 $$
 
 ## 1.2.6 例：素数判定
@@ -96,3 +96,26 @@ $$
 これは、Nの約数がkだったとした場合、N/kも約数になるが、
 どちらも、√N以下になることから。
 
+
+```lisp
+#lang racket
+(define (expmod base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp) (remainder (square (expmod base (/ exp 2) m)) m))
+        (else        (remainder (* base (expmod base (- exp 1) m)) m))))
+
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (prime? n times)
+  (cond ((= times 0) #t)
+        ((fermat-test n) (prime? n (- times 1)))
+        (else #f)))
+
+(define (square n) (* n n))
+
+(display (prime? 2 100))
+```
