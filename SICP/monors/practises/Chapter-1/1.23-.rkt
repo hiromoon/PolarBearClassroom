@@ -258,3 +258,99 @@
 
 (display (integral cube 0 1 0.0001))
 
+; 1.31
+; a
+#lang racket
+(define (products term a next b)
+  (if (> a b)
+      1
+      (* (term a) (products term (next a) next b))))
+
+(define (j_pi times)
+    (define (f n)
+        (if (even? n)
+            (/ (+ n 2) (+ n 1))
+            (/ (+ n 1) (+ n 2))))
+  
+    (define (add n) (+ n 1.0))
+
+    (* 4 (products f 1 add times)))
+
+(display (j_pi 100000))
+
+;b
+#lang racket
+(define (products term a next b)
+  (define (product-iter n result)
+    (if (> n b)
+        result
+        (product-iter (next n) (* result (term n)))))
+
+  (product-iter a 1))
+
+(define (j2_pi times)
+    (define (f n)
+      (if (even? n)
+          (/ (+ n 2) (+ n 1))
+          (/ (+ n 1) (+ n 2))))
+    (define (add n)
+      (+ n 1.0))
+
+    (* 4 (products f 1 add times)))
+
+(display (j2_pi 100000000))
+     
+; 1.32
+; a
+#lang racket
+(define (accumulate combiner null-value term a next b)
+  (if (> a b)
+      null-value
+      (combiner (term a) (accumulate combiner null-value term (next a) next b))))
+
+(define (sum term a next b)
+  (accumulate + 0 term a next b))
+
+(define (products term a next b)
+  (accumulate * a term a next b))
+
+(define (j2_pi times)
+(define (f n)
+  (if (even? n)
+      (/ (+ n 2) (+ n 1))
+      (/ (+ n 1) (+ n 2))))
+(define (add n)
+  (+ n 1.0))
+
+(* 4 (products f 1 add times)))
+
+(display (j2_pi 100000))
+
+; b
+#lang racket
+(define (accumulate combiner null-value term a next b)
+  (define (accumulate-iter n result)
+    (if (> n b)
+        result
+        (accumulate-iter (next n) (combiner result (term n)))))
+
+    (accumulate-iter a null-value))
+
+(define (sum term a next b)
+  (accumulate + 0 term a next b))
+
+(define (products term a next b)
+  (accumulate * a term a next b))
+
+(define (j2_pi times)
+(define (f n)
+  (if (even? n)
+      (/ (+ n 2) (+ n 1))
+      (/ (+ n 1) (+ n 2))))
+(define (add n)
+  (+ n 1.0))
+
+(* 4 (products f 1 add times)))
+
+(display (j2_pi 100000))
+
