@@ -354,3 +354,58 @@
 
 (display (j2_pi 100000))
 
+; 1.33
+; a
+#lang racket
+(define (filterd-accumulate combiner filter-term null-value term a next b)
+  (if (> a b)
+      null-value
+      (if (filter-term a)
+          (combiner (term a) (filterd-accumulate combiner filter-term null-value term (next a) next b))
+          (filterd-accumulate combiner filter-term null-value term (next a) next b))))
+
+(define (sum-square-primes a b)
+  (filterd-accumulate + prime? 0 square a (lambda (x) (+ x 1)) b))
+
+(define (prime? n)
+    (if (= (smallest-divider n) n) #t #f))
+
+(define (smallest-divider n)
+    (define (divider-iter n test-divider)
+      (cond ((divided? n test-divider) test-divider)
+            ((< n test-divider) n)
+            (else (divider-iter n (+ test-divider 1)))))
+
+    (define (divided? a b)
+      (= 0 (remainder a b) 0))
+
+    (divider-iter n 2))
+
+(define (square n) (* n n))
+
+(display (sum-square-primes 1 10))
+
+; b
+#lang racket
+(define (products-all-comprime n) 
+  (define (comprime? a)
+    (= (gcd a n) 1))
+
+  (filterd-accumulate * comprime? 1 (lambda (x) x) 1 (lambda (x) (+ x 1)) n))
+
+(define (filterd-accumulate combiner filter-term null-value term a next b)
+  (if (> a b)
+      null-value
+      (if (filter-term a)
+          (combiner (term a) (filterd-accumulate combiner filter-term null-value term (next a) next b))
+          (filterd-accumulate combiner filter-term null-value term (next a) next b))))
+
+
+(products-all-comprime 10)
+
+; 1.34
+#lang racket
+(define (f g) (g 2))
+
+; (f f) => (f 2) => (2 2)
+; となり、エラーが発生する。 
