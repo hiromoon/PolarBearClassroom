@@ -115,6 +115,77 @@ let式で指定された変数のスコープがletの本体である。
   (* x y))
 ```
 ## 1.3.3 汎用手法としての手続き
+関数の零点を不動店を見つける汎用手法について検討し、これらが直接表現できることを示します。
+
+### 区分二分法によって方程式の根を求める。
+f(x) = 0である点を求めるための方法である。
+必要なステップ数の増加オーダーは、元の区間の長さをL、許容誤差（"十分に小さい”とみなす区分の大きさ)をTとして、ø(log(L/t))になります。
+```lisp
+(define (serch f neg-point pos-point)
+  (let ((midpoint (average neg-point pos-point)))
+        (if (close-enough? neg-point pos-point)
+            midpoint
+            (let ((test-value (f midpoint)))
+              (cond ((positive? test-point)
+                     (search f neg-point midpoint))
+                    ((negapoint? test-point)
+                     (search f midpoint pos-point))
+                    (else midpoint))))))
+```
+両端が十分に近いかどうかをテストするには、前回平方根をとめるるのに使ったのと同じ手続きが使います。
+```lisp
+(define (clase-enough? x y) (< (abs (- x y)) 0.001))
+```
+
+searchを直接使用すると面倒な事があります。
+fに適用される関数の種類によって、neg-positとpos-positの順番が変化します。
+これを解決してくれる様な関数が必要となります。
+```lisp
+(define (half-interval-method f a b)
+  (let ((a-value (f a))
+        (b-value (f b)))
+       (cond ((and (positive? a-value) (negative? b-value))
+              (serch f a b))
+             ((and (negative? a-value) (negative? a-value))
+              (serch f b a))
+             (else 
+              (error "Values are not of opposite sign" a b)))))
+```
+
+### 不動点を求める。
+不動店とは、f(x) = xとなる様な点のことをいう。
+この近似値は、下記のようにfを繰り返し適用していくやり方でもとめる事ができる。
+f(x), f(f(x)), f(f(f(x))), ...
+
+変更前後の平均値が十分小さいもの場合、適用をやめる。
+この考え方をしようして、関数と初期値を入力して、その関数の不動点の近似値を生成する手続きを作る事ができます。
+
+```lisp
+(define tolerance 0.000001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+      tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+          next
+          (try next))))
+
+  (try first-guess))
+```
+このような方法は、ある基準値を満たす数値を繰り返し改善することで求めるという考えに基づいています。
+
+先に求めた、平方根に関しても、y^2 = xを満たすyを検索するのと同義です。
+y -> x / y <=> y -> 1/2 (y + x / y)
+* 推定値に対してこれを繰り返せば、近似できるというものである。
+* 実際にはイコール関係ではなく、変換関係である。
+
+### 用語
+* 不動点探索
+  * 推定を繰り返して基準値の推定の精度を高めていく。
+* 平均緩和法
+  * 不動点探索法で連続した近似値の平均をとるというアプローチ
 
 ## 1.3.4 戻り値としての手続き
 
