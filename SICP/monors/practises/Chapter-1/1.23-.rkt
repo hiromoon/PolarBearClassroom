@@ -1,5 +1,5 @@
 ; 1.21
-#lang racket
+#lan racket
 (define (smallest-divisor n)
   (find-divisor n 2))
 
@@ -499,3 +499,66 @@
 ;4.555909809045131
 ;4.555599411610624
 ;4.5555465521473675;
+
+
+; 1.37
+; a
+#lang racket
+;(define (cont-frac n d k)
+;  (define (try i)
+;    (if (> i k)
+;        (d i)
+;        (+ (d (- i 1)) (/ (n i) (try (+ i 1))))))
+;  (/ (n 1) (try 2)))
+
+; 下記の描き方の方が綺麗だった。
+(define (cont-frac n d k)
+  (define (try n)
+    (if (> n i)
+        (/ (n i) (d i))
+        (/ (n i) (+ (d i) (try (+ 1 n))))))
+  (try 1))
+          
+(define (iter-a-to-b f a b)
+   (newline)
+   (display a)
+   (display "->")
+   (display (f a))
+   
+   (if (> a b)
+      (and (newline)(display "end"))
+      (iter-a-to-b f (+ a 1) b)))
+
+(iter-a-to-b
+ (lambda (k) (cont-frac (lambda (i) 1.0)
+                        (lambda (i) 1.0)
+                        k))
+ 1
+ 20)
+
+; b
+#lang racket
+(define (cont-frac n d k)
+  (define (try i result)
+    (let ((current (+ (d (- i 1)) (/ (n i) result))))
+        (if (> 0 i)
+            result
+            (try (- i 1) current))))
+  (/ (n 1) (try k (d k))))
+
+(define (iter-a-to-b f a b)
+   (newline)
+   (display a)
+   (display "->")
+   (display (f a))
+   
+   (if (> a b)
+      (and (newline)(display "end"))
+      (iter-a-to-b f (+ a 1) b)))
+
+(iter-a-to-b
+ (lambda (k) (cont-frac (lambda (i) 1.0)
+                        (lambda (i) 1.0)
+                        k))
+ 1
+ 20)
