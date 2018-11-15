@@ -513,10 +513,10 @@
 
 ; 下記の描き方の方が綺麗だった。
 (define (cont-frac n d k)
-  (define (try n)
-    (if (> n i)
+  (define (try i)
+    (if (> i k)
         (/ (n i) (d i))
-        (/ (n i) (+ (d i) (try (+ 1 n))))))
+        (/ (n i) (+ (d i) (try (+ 1 i))))))
   (try 1))
           
 (define (iter-a-to-b f a b)
@@ -562,4 +562,81 @@
                         k))
  1
  20)
+
+;1.38
+; 2 -> 2
+; 5 -> 4
+; 8 -> 6
+; 反復バージョン
+#lang racket
+(define (cont-frac n d k)
+  (define (try i)
+    (if (> i k)
+        (/ (n i) (d i))
+        (/ (n i) (+ (d i) (try (+ 1 i))))))
+  (try 1))
+
+
+(define (num-array n)
+  (if (= (remainder n 3) 2)
+      (/ (* 2 (+ n 1))  3)
+      1))
+
+(define (e n)
+  (+ 2 (cont-frac 
+            (lambda (k) 1.0)
+             num-array
+             n)))
+
+(define (test-a-b f a b)
+  (newline)
+  (display (f a))
+  (if (> a b)
+      (and (newline) (display "end")) 
+      (test-a-b f (+ 1 a) b)))
+
+;(test-a-b num-array 1 10)
+(e 10)
+
+; 再帰バージョン
+(define (cont-frac n d k)
+  (define (try i result)
+    (let ((current (+ (d (- i 1)) (/ (n i) result))))
+        (if (> 2 i)
+            result
+            (try (- i 1) current))))
+  (/ (n 1) (try k (d k))))
+
+(define (num-array n)
+  (if (= (remainder n 3) 2)
+      (/ (* 2 (+ n 1))  3)
+      1))
+
+(define (e n)
+  (+ 2 (cont-frac 
+            (lambda (k) 1.0)
+             num-array
+             n)))
+
+(define (test-a-b f a b)
+  (newline)
+  (display (f a))
+  (if (> a b)
+      (and (newline) (display "end")) 
+      (test-a-b f (+ 1 a) b)))
+
+;(test-a-b num-array 1 10)
+(e 100)
+
+; 1.39
+#lang racket
+(define (tan-fc x n)
+  (cont-frac 
+    (lambda (k) (if (= 1 k) x (- (* x x))))
+    (lambda (k) (- (* 2.0 k) 1))
+    n))
+
+(tan-fc 1 100)
+; > 1.557407724654902
+
 
