@@ -81,3 +81,54 @@ new-ifは、一般的評価規則の為、被演算子を先に評価してお�
 imprope(4, 9)は、値として評価できるが、その後(sqrt x y)を再度評価しないといけない為、無限ループになる。
 
 ; こーいう時の為に、特殊評価規則がいるのね。
+
+
+;1.7
+;1.8
+;1.9
+;1.10
+
+;1.11
+
+; 再帰
+これはただ書くだけ。
+
+#lang sicp
+
+(define (f n)
+    (if (< n 3) n
+        (+ (f (- n 1)) (f (- n 2)) (f (- n 3)))))
+
+
+; 反復
+少し考えてわからんかったから答え見た。
+
+(define (ff n)
+    (define (iter new old old2 count)
+        (if (>= count n) new
+            (iter (+ new old old2) new old (+ 1 count))))
+    (iter 3 2 1 3))
+
+;1.12
+再帰問題でよくみるやつ。
+r:行、c:列とすると、
+
+#lang sicp
+
+(define (pascal r c) 
+    (cond ((= c 1) 1)
+          ((= r c) 1)
+          (else (+ (pascal (- r 1) (- c 1))
+                   (pascal (- r 1) c)))))
+
+; テスト
+; たぶんいけた
+(pascal 3 2) 2
+(pascal 4 2) 3 
+(pascal 4 3) 3
+
+;1.13
+証明問題はパス
+
+
+
