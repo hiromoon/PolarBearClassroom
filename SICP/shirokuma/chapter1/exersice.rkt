@@ -109,6 +109,7 @@ imprope(4, 9)は、値として評価できるが、その後(sqrt x y)を再度
             (iter (+ new old old2) new old (+ 1 count))))
     (iter 3 2 1 3))
 
+
 ;1.12
 再帰問題でよくみるやつ。
 r:行、c:列とすると、
@@ -129,6 +130,43 @@ r:行、c:列とすると、
 
 ;1.13
 証明問題はパス
+
+;1.14
+
+
+ (define (count-change amount) 
+   (cc amount 5)) 
+ (define (cc amount kinds-of-coins) 
+   (cond ((= amount 0) 1) 
+         ((or (< amount 0) (= kinds-of-coins 0)) 0) 
+         (else (+ (cc amount 
+                      (- kinds-of-coins 1)) 
+                  (cc (- amount 
+                         (first-denomination kinds-of-coins)) 
+                      kinds-of-coins))))) 
+ (define (first-denomination kinds-of-coins) 
+   (cond ((= kinds-of-coins 1) 50) 
+         ((= kinds-of-coins 2) 25) 
+         ((= kinds-of-coins 3) 10) 
+         ((= kinds-of-coins 4) 5) 
+         ((= kinds-of-coins 5) 1))) 
+
+木を書くのはつらかった。。
+2番目についてはわからんかったので答えみた。
+
+;1.15
+
+(sine 12.15)
+(p (sine 4.05))
+(p (p (sine 1.35)))
+(p (p (p (sine 0.45))))
+(p (p (p (p (sine 0.15)))))
+(p (p (p (p (p (sine 0.05))))))
+(p (p (p (p (p 0.05)))))
+
+5回？ 
+
+2番目の問はわからんかったので、答えみたがピンとこない。。
 
 
 
