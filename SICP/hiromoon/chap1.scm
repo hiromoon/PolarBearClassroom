@@ -163,6 +163,7 @@
 ;ここ見たらわかった気がしたけど気のせいだった
 ;http://yoshiko.hatenablog.jp/entry/2014/06/11/SICP%E8%AA%B2%E9%A1%8C1.11%E3%82%92%E3%82%82%E3%81%86%E3%81%84%E3%81%A1%E3%81%A9%E3%81%A6%E3%81%84%E3%81%AD%E3%81%84%E3%81%AB
 ;nの回数分だけ値をローテーションしながら計算を反復する
+;あとで展開してみる
 (define (fun n)
   (fun-iter 0 1 2 n))
 (define (fun-iter a b c counter)
@@ -182,3 +183,46 @@
 ;practice1-13
 ;このあたり見たけど数学がわかりませんでした。
 ;https://sicp-solutions.readthedocs.io/en/latest/docs/problem-1-13.html
+
+;practice1-14
+;回答はDraw.ioで
+;https://drive.google.com/file/d/1PuPiIzdK_pwbdNxZE8yUtq2EGQN5Md7W/view?usp=sharing
+(define (count-change amount) (cc amount 5))
+(define (cc amount kinds-of-coins)
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (= kinds-of-coins 0)) 0)
+        (else (+ (cc amount
+                     (- kinds-of-coins 1))
+                 (cc (- amount
+                        (first-denomination kinds-of-coins))
+                     kinds-of-coins)))))
+(define (first-denomination kinds-of-coins)
+  (cond ((= kinds-of-coins 1) 1)
+        ((= kinds-of-coins 2) 5)
+        ((= kinds-of-coins 3) 10)
+        ((= kinds-of-coins 4) 25)
+        ((= kinds-of-coins 5) 50)))
+
+;practice1-15
+(define (cube x) (* x x x))
+(define (p x) (- (* 3 x) (* 4 (cube x))))
+(define (sine angle)
+  (if (not (> (abs angle) 0.1))
+    angle
+    (p (sine (/ angle 3.0)))))
+
+;a. 5回
+;(sine 12.15)
+;(p (sine (/ 12.15 3.0)))
+;(p (sine 4.05))
+;(p (p (sine (/ 4.05 3.0))))
+;(p (p (sine 1.35)))
+;(p (p (p (sine (/ 1.35 3.0)))))
+;(p (p (p (sine 0.45))))
+;(p (p (p (p (sine (/ 0.45 3.0))))))
+;(p (p (p (p (sine 0.15)))))
+;(p (p (p (p (p (sine (/ 0.15 3.0)))))))
+;(p (p (p (p (p (sine 0.05))))))
+;(p (p (p (p (p 0.05)))))
+
+;b. やっぱり数学がわかりませんでした
