@@ -168,5 +168,41 @@ r:行、c:列とすると、
 
 2番目の問はわからんかったので、答えみたがピンとこない。。
 
+; 1.16
+
+#lang sicp
+
+ (define (fast-expt b n) 
+   (define (iter a b n) 
+     (cond ((= n 0) a) 
+           ((even? n) (iter a (square b) (/ n 2))) 
+           (else (iter (* a b) b (- n 1))))) 
+   (iter 1 b n)) 
+ (define (square x) (* x x)) 
+
+ ; テスト 
+(fast-expt 2 0) 
+(fast-expt 2 1) 
+(fast-expt 2 8) 
+
+; 1.17
+
+#lang sicp
+
+(define (multiply a b)
+  (define (double x) (* 2 x))
+  (define (halve x) (/ 2 x))
+  (cond ((= b 0) 0)
+        ((even? b) (double (multiply a (halve b))))
+        (else (+ a (multiply a (- b 1))))))
+
+; 1.18
+
+TODO
+
+; 1.19
+
+TODO
+
 
 
