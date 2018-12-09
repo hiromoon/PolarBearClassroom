@@ -235,13 +235,11 @@
   (= (remainder n 2) 0))
 
 ;practice1-16
-; (+ n 1)がなんかHack感ある。。。
 (define (fast-loop-expt b n)
-  (fast-loop-expt-iter b (+ n 1) 1))
+  (fast-loop-expt-iter b n 1))
 (define (fast-loop-expt-iter b n a)
   (cond ((= n 0) a)
-        ((= n 1) a)
-        ((even? n) (fast-loop-expt-iter (square b) (/ n 2) (* a b)))
+        ((even? n) (fast-loop-expt-iter (square b) (/ n 2) a))
         (else (fast-loop-expt-iter b (- n 1) (* a b)))))
 
 ;practice1-17
@@ -251,20 +249,34 @@
   (* n 2))
 (define (mul a b)
   (cond ((= b 0) 0)
-        ((= b 1) a)
         ((even? b) (double (mul a (halve b))))
         (else (+ (mul a (- b 1)) a))))
 
 ;practice1-18
 (define (fast-mul a b)
-  (fast-mul-iter a (+ b 1) 0))
+  (fast-mul-iter a b 0))
 (define (fast-mul-iter a b acc)
   (cond ((= b 0) acc)
-        ((= b 1) acc)
-        ((even? b) (fast-mul-iter (double a) (halve b) (+ acc a)))
+        ((even? b) (fast-mul-iter (double a) (halve b) acc))
         (else (fast-mul-iter a (- b 1) (+ acc a)))))
 
 ;practice1-19
+#lang racket
+(define (fib n)
+  (fib-iter 1 0 0 1 n))
+(define (fib-iter a b p q count)
+  (cond ((= count 0) b)
+        ((even? count)
+         (fib-iter a
+                   b
+                   p'
+                   q'
+                   (/ count 2)))
+        (else (fib-iter (+ (* b q) (* a q) (* a p))
+                        (+ (* b p) (* a q))
+                        p
+                        q
+                        (- count 1)))))
 
 ;practice1-20
 (define (gcd a b)
@@ -272,6 +284,13 @@
     a
     (gcd b (remainder a b))))
 ;正規順序評価
+;(gcd 206 40)
+;(gcd 40 (remainder 206 40))
+;(gcd (remainder 206 40) (remainder 40 (remainder 206 40)))
+;(gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
+;...
+
+;適用順序評価
 ; 4回
 ;(gcd 206 40)
 ;(gcd 40 (remainder 206 40))
@@ -282,11 +301,4 @@
 ;(gcd 4 2)
 ;(gcd 2 (remainder 4 2))
 ;(gcd 2 0) => 2
-
-;適用順序評価
-;(gcd 206 40)
-;(gcd 40 (remainder 206 40))
-;(gcd (remainder 206 40) (remainder 40 (remainder 206 40)))
-;(gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
-;...
 
