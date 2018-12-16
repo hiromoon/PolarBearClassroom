@@ -178,6 +178,10 @@ f(x), f(f(x)), f(f(f(x))), ...
 
 先に求めた、平方根に関しても、y^2 = xを満たすyを検索するのと同義です。
 y -> x / y <=> y -> 1/2 (y + x / y)
+
+ここで、y -> x / yは"map to"(写像する)と読む。lambdaの数学者式の書き方です。y -> x / yは(lambda (y) (/ x y))の意味です。つまり、yでの値がx / yとなる様な関数を表しています。
+
+
 * 推定値に対してこれを繰り返せば、近似できるというものである。
 * 実際にはイコール関係ではなく、変換関係である。
 
@@ -188,4 +192,44 @@ y -> x / y <=> y -> 1/2 (y + x / y)
   * 不動点探索法で連続した近似値の平均をとるというアプローチ
 
 ## 1.3.4 戻り値としての手続き
+戻り値として、手続きを返却することを考える。
+これまで見てきた平方根のロジックは下記の様に書き直す事ができる。
+```lisp
+(define (square x)
+  (* x x))
 
+(define (average a b)
+  (/ (+ a b) 2))
+
+(define torelance 0.00001)
+(define (fixed-point f x)
+  (define (closed-enough? v1 v2)
+  (< (abs (- v1 v2)) torelance))
+
+  (let ((next (f x)))
+    (if (closed-enough? x next)
+         x
+        (fixed-point f next))))
+
+; lambdaを返す式
+(define (average-dump f)
+  (lambda (x) (average x (f x))))
+
+; これを用いて平方根を求める場合、下記の様になる。
+; 下記では、不動点探査、平方緩和方、y -> x / yを使用している事がわかりやすくなっている。
+(define (sqrt x)
+  (fixed-point
+   (average-dump (lambda (y) (/ x y)))
+   1.0
+   ))
+
+(sqrt 2)
+```
+これは、y -> x / yの部分を変更すれば別の不動点探査にも応用が可能である。
+例えば、y = x / y^2の場合か下記のように記載可能である。
+```lisp
+(define (cube-root x)
+  (fixed-point (average-dump (lambda (x) (/ x (square y))))
+               1.0
+               ))
+```
