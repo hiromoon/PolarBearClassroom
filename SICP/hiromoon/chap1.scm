@@ -355,3 +355,70 @@
 (define (next n)
   (cond ((= n 2) 3)
         (else (+ n 2))))
+
+;practice1-24
+(define (expmod base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (remainder
+           (square (expmod base (/ exp 2) m))
+           m))
+        (else
+          (remainder
+            (* base (expmod base (- exp 1) m))
+            m))))
+
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond ((= times 0) true)
+        ((fermat-test n) (fast-prime? n (- times 1)))
+        (else false)))
+
+(define (timed-prime-test n) (newline)
+  (display n)
+  (start-prime-test n (runtime)))
+
+(define (start-prime-test n start-time)
+  (if (fast-prime? n 10000) (report-prime (- (runtime) start-time))))
+(define (report-prime elapsed-time)
+  (display " *** ")
+  (display elapsed-time))
+
+(timed-prime-test 1009)   ;1009   *** 15713 *** 406
+(timed-prime-test 1013)   ;1013   *** 16156 *** 4
+(timed-prime-test 1019)   ;1019   *** 18369 *** 3
+(timed-prime-test 10007)  ;10007  *** 23090 *** 8
+(timed-prime-test 10009)  ;10009  *** 20068 *** 8
+(timed-prime-test 10037)  ;10037  *** 20398 *** 8
+(timed-prime-test 100043) ;100043 *** 24081 *** 24
+(timed-prime-test 100003) ;100003 *** 28211 *** 25
+(timed-prime-test 100019) ;100019 *** 24688 *** 24
+
+;practice1-25
+(define (fast-expt b n)
+  (cond ((= n 0) 1)
+        ((even? n) (square (fast-expt b (/ n 2))))
+        (else (* b (fast-expt b (- n 1))))))
+(define (even? n)
+  (= (remainder n 2) 0))
+(define (expmod base exp m)
+  (remainder (fast-expt base exp) m))
+
+;1009   *** 3494
+;1013   *** 170
+;1019   *** 163
+;10007  *** 49393
+;10009  *** 5770
+;10037  *** 5286
+;100003 *** 321562
+;100019 *** 258125
+;100043 *** 272366
+
+;practice1-26
+;偶数の場合にexpmodが2回呼ばれるため
+;expmod(4/2) -> 2 -> expmod(2/2) -> 1 -> expmod(1) => 3回 
+;expmod(4/2)expmod(4/2) -> 2 2 -> expmod(2/2)expmod(2/2) expmod(2/2)expmod(2/2) -> expmod(1) .. => 10回
