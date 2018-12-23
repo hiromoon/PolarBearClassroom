@@ -422,3 +422,58 @@
 ;偶数の場合にexpmodが2回呼ばれるため
 ;expmod(4/2) -> 2 -> expmod(2/2) -> 1 -> expmod(1) => 3回 
 ;expmod(4/2)expmod(4/2) -> 2 2 -> expmod(2/2)expmod(2/2) expmod(2/2)expmod(2/2) -> expmod(1) .. => 10回
+
+;practice1-27
+;全部falseになった
+;[カーマイケル数](https://ja.wikipedia.org/wiki/%E3%82%AB%E3%83%BC%E3%83%9E%E3%82%A4%E3%82%B1%E3%83%AB%E6%95%B0)
+(fermat-test 561)
+(fermat-test 1105)
+(fermat-test 1729)
+(fermat-test 2465)
+(fermat-test 2821)
+(fermat-test 6601)
+(fermat-test 8911)
+
+;practice1-28
+;回答動いたけどよくわからん
+(define (miller-rabin-test n) 
+  (define (try-it a)
+    (define (check-it x)
+      (and (not (= x 0)) (= x 1))
+    (check-it (expmod a (- n 1) n))))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (expmod base exp m)
+  (define (square-with-check x)
+    (define (check-nontrivial-sqrt1 n square)
+      (if (and (= square 1)
+               (not (= x 1))
+               (not (= x (- m 1))))
+        0
+        square))
+    (check-nontrivial-sqrt1 x (remainder (square x) m)))
+  (cond ((= exp 0) 1)
+        ((even? exp) (square-with-check (expmod base (/ exp 2) m)))
+        (else
+          (remainder (* base (expmod base (- exp 1) m))
+                     m))))
+
+
+
+(miller-rabin-test 1009)   
+(miller-rabin-test 1013)   
+(miller-rabin-test 1019)   
+(miller-rabin-test 10007)  
+(miller-rabin-test 10009)  
+(miller-rabin-test 10037)  
+(miller-rabin-test 100043) 
+(miller-rabin-test 100003) 
+(miller-rabin-test 100019) 
+
+(miller-rabin-test 561)
+(miller-rabin-test 1105)
+(miller-rabin-test 1729)
+(miller-rabin-test 2465)
+(miller-rabin-test 2821)
+(miller-rabin-test 6601)
+(miller-rabin-test 8911)
