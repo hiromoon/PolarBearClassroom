@@ -337,7 +337,7 @@
 (display " *** ") (display elapsed-time))
 
 (define (prime? n)
-(= n (smallest-divisor n)))
+  (= n (smallest-divisor n)))
 
 (define (smallest-divisor n) (find-divisor n 2))
 (define (find-divisor n test-divisor)
@@ -477,3 +477,170 @@
 (miller-rabin-test 2821)
 (miller-rabin-test 6601)
 (miller-rabin-test 8911)
+
+;practice1-29
+(define (cube x) (* x x x))
+
+(define (sum term a next b)
+  (if (a > b)
+    0
+    (+ (term a)
+       (sum term (next a) b))))
+
+(define (integral f a b dx)
+  (define (add-dx x)
+    (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b)
+     dx))
+
+(define (inc n) (+ n 1))
+
+(define (simpson f a b n)
+  (define h (/ (- b a) n))
+  (define (y a k)
+    (+ a (* h k)))
+  (define (coef k)
+    (cond ((or (= k 0) (= k n)) 1)
+          ((even? k) 2)
+          (else 4)))
+  (define (term k) 
+    (* (coef k) (f (y a k))))
+  (* (/ h 3)
+     (sum term 0 inc n)))
+
+(integral cube 0 1 0.01)  ;0.24998750000000042
+(integral cube 0 1 0.001) ;0.249999875000001
+(simpson cube 0 1 100)    ;0.24999999999999992
+(simpson cube 0 1 1000)   ;0.2500000000000002
+
+;practice1-30
+(define (sum term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ result (term a)))))
+  (iter a 0))
+
+(sum 1 cube inc 10) ;3025
+
+;practice1-31
+;a 線形再帰
+(define (product term a next b)
+  (if (> a b)
+       1
+       (* (term a)
+          (product term (next a) b))))
+;b 反復
+(define (product term a next b)
+  (define (iter a result)
+    (if (> a b)
+      result
+      (iter (next a) (* result (term a)))))
+  (iter a 1))
+
+;factorial
+(define (factorial n) 
+  (define (identity x) x)
+  (define (inc n) (+ n 1))
+  (product identity 1 inc n))
+
+(factorial 2)
+(factorial 3)
+(factorial 4)
+(factorial 5)
+
+;pi
+(define (pi k) 
+  ;分母 x_i = 3 + 2(i / 2)
+  (define (numerator i)
+        (+ 3.0 (* (quotient i 2.0) 2)))
+  ;分子
+  (define (denominator i)
+        (+ 2.0 (* 2 (quotient (+ i 1) 2.0))))
+  (* 4 (/ (product denominator 0 inc k)
+     (product numerator 0 inc k))))
+
+(pi 10) ;3.023170192001361
+
+;practice1-32
+;a 再帰プロセス
+(define (accumulate combiner null-value term a next b) 
+  (if (> a b)
+    null-value
+    (combiner
+      a
+      (accumulate combiner null-value term (next a) next b))))
+
+(define (sum term a next b)
+  (define (combiner a acc) (+ acc a))
+  (accumulate combiner 0 term a next b))
+
+(define (product term a next b)
+  (define (combiner a acc) (* acc a))
+  (accumulate combiner 1 term a next b))
+
+(define (identity x) x)
+(define (inc n) (+ n 1))
+
+(sum identity 1 inc 10)
+(product identity 1 inc 10)
+
+;b 線形プロセス
+(define (accumulate combiner null-value term a next b)
+  (define (iter a acc)
+    (if (> a b)
+      acc
+      (iter (next a) (combiner a acc))))
+  (iter a null-value))
+
+(define (sum term a next b)
+  (define (combiner a acc) (+ acc a))
+  (accumulate combiner 0 term a next b))
+
+(define (product term a next b)
+  (define (combiner a acc) (* acc a))
+  (accumulate combiner 1 term a next b))
+
+(define (identity x) x)
+(define (inc n) (+ n 1))
+
+(sum identity 1 inc 10)
+(product identity 1 inc 10)
+
+;practice1-33
+(define (filtered-accumulate filter combiner null-value term a next b)
+  (define (iter a acc)
+    (if (> a b)
+      acc
+      (if (filter a)
+        (iter (next a) (combiner a acc))
+        (iter (next a) acc)))
+  (iter a null-value))
+
+;a 素数の2乗和
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(define (smallest-divisor n) (find-divisor n 2))
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (next test-divisor)))))
+(define (divides? a b) (= (remainder b a) 0))
+  
+(define (square n) (* n n))
+
+(define (square-prime-sum)
+  (define (combiner a acc) (+ a acc))
+  (filtered-accumulate prime? combiner 0 identity a inc b))
+
+;b GCD(i, n) = 1
+(define (product-gcd a b)
+  (define (filter a) (= (gcd a b) 1))
+  (define (combiner a acc) (* a acc))
+  (filtered-accumulate filter combiner 1 identity a inc b))
+
+(define (gcd a b)
+  (if (= b 0)
+    a
+    (gcd b (remainder a b))))
