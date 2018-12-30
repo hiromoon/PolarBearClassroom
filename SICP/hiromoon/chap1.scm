@@ -644,3 +644,127 @@
   (if (= b 0)
     a
     (gcd b (remainder a b))))
+
+;practice1-34
+(define (f g) (g 2))
+(f f)
+;(f (f 2))
+;(f (2 2))
+;2は手続きではなく値じゃないので不正だと解釈される
+
+;practice1-35
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+
+(fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0)
+
+;practice1-36
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (display guess)
+    (newline)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+
+(define (average v1 v2)
+  (/ (+ v1 v2) 2.0))
+;通常
+(fixed-point (lambda (x) (/ (log  1000) (log x))) 10.0)
+;平均緩和法
+(fixed-point (lambda (x) (average x (/ (log  1000) (log x)))) 10.0)
+;step 通常             平均緩和法
+;1  10.0               10.0
+;2  2.9999999999999996 6.5
+;3  6.2877098228681545 5.095215099176933
+;4  3.7570797902002955 4.668760681281611
+;5  5.218748919675316  4.57585730576714
+;5  4.1807977460633134 4.559030116711325
+;6  4.828902657081293  4.55613168520593
+;7  4.386936895811029  4.555637206157649
+;8  4.671722808746095  4.55555298754564
+;9  4.481109436117821  4.555538647701617
+;10 4.605567315585735  4.555536206185039
+;11 4.522955348093164
+;12 4.577201597629606
+;13 4.541325786357399
+;14 4.564940905198754
+;15 4.549347961475409
+;16 4.5596228442307565
+;17 4.552843114094703
+;18 4.55731263660315
+;19 4.554364381825887
+;19 4.556308401465587
+;20 4.555026226620339
+;21 4.55587174038325
+;22 4.555314115211184
+;23 4.555681847896976
+;24 4.555439330395129
+;25 4.555599264136406
+;26 4.555493789937456
+;27 4.555563347820309
+;28 4.555517475527901
+;29 4.555547727376273
+;30 4.555527776815261
+;31 4.555540933824255
+;32 4.555532257016376
+
+;practice1-37
+;リンク先によると間違ってるらしいけど違いがよくわからなかった
+;http://community.schemewiki.org/?sicp-ex-1.37
+;a
+(define (cont-frac n d k)
+  (if (= k 0) 0
+    (/ (n k) (+ (d k) (cont-frac n d (- k 1))))))
+
+(cont-frac (lambda (i) 1.0)
+           (lambda (i) 1.0)
+           100)
+
+;b
+(define (cont-frac n d k)
+  (define (loop i result)
+    (if (= i 0) 
+      result
+      (loop (- i 1) (/ (n i) (+ (d i) result)))))
+  (loop k 0))
+
+;practice1-38
+(+ 2.0 (cont-frac (lambda (i) 1.0)
+           (lambda (i) 
+             (define x (remainder i 3))
+             (if (or (= x 0) (= x 2)) 1
+               (* 2 (+ (quotient i 3) 1))))
+           100))
+
+;practice1-39
+;cont-fracが使えるっぽい(?)
+(define (tan-cf x k)
+  (define (square x) (* x x))
+  (define (n i)
+    (if (= i 0)
+      x
+      (square x)))
+  (define (d i) (+ 1 (* i 2)))
+  (define (loop i result)
+    (if (= i 0)
+      result
+      (loop (- i 1) (/ (n i) (- (d i) result)))))
+  (loop k 0))
+
+(tan-cf 90 100)
