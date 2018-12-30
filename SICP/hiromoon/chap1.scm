@@ -768,3 +768,119 @@
   (loop k 0))
 
 (tan-cf 90 100)
+
+;practice1-40
+(define (newton-transform g)
+  (lambda (x) (- x (/ (g x) ((deriv g) x)))))
+(define (newtons-method g guess) 
+  (fixed-point (newton-transform g) guess))
+(define dx 0.00001)
+(define (deriv g)
+  (lambda (x) (/ (- (g (+ x dx)) (g x)) dx)))
+
+;よくわかんなかったので答え見た
+;http://community.schemewiki.org/?sicp-ex-1.40
+(define (cubic a b c) 
+  (define (cube x) (* x x x))
+  (define (square x) (* x x))
+  (lambda (x)
+    (+ 
+      (cube x)
+      (* a (square x))
+      (* b x)
+      c)))
+
+;practice1-41
+(define (double f)
+  (lambda (x) (f (f x))))
+
+(define (inc n) (+ n 1))
+(((double (double double)) inc) 5)
+;21
+
+;practice1-42
+(define (square n) (* n n))
+(define (inc n) (+ n 1))
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+(define (test actual expected)
+  (if (= actual expected)
+    (display "OK")
+    (display "NG")))
+
+(test ((compose square inc) 6) 49)
+
+;practice1-43
+(define (repeated f n)
+  (if (= n 1)
+    f
+    (compose f (repeated f (- n 1)))))
+
+(test ((repeated square 2) 5) 625)
+
+;practice1-44
+(define dx 0.00001)
+(define (smooth f)
+  (define (average v1 v2 v3) 
+    (/ (+ v1 v2 v3) 3))
+  (lambda (x) (average (f (- x dx)) (f x) (f (+ x dx)))))
+
+(define (n-fold-smoothed f n)
+  ((repeated smooth n) f))
+
+;practice1-45
+;よくわからなかったので一旦スキップ
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (display guess)
+    (newline)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+
+(define (average-damp f)
+  (define (average v1 v2)
+    (/ (+ v1 v2) 2))
+  (lambda (x) (average x (f x))))
+
+(define (n-sqrt x n) 
+  (fixed-point ((repeated average-damp (- n 1)) (lambda (y) (/ x ())))
+               1.0))
+
+;practice1-46
+;めんどかったのでコピペ
+;http://community.schemewiki.org/?sicp-ex-1.46
+(define (iterative-improve close-enough? improve-guess) 
+  (lambda (first-guess)
+    (define (try guess)
+      (if (close-enough? guess next)
+        next
+        (try next))
+    (try first-guess))))
+
+(define (close-enough? v1 v2)
+  (< (abs (- v1 v2)) tolerance))
+
+(define (fixed-point f first-guess)
+  ((iterative-improve
+     (lambda (x) (close-enough? x (f x)))
+     f)
+   first-guess))
+
+(define (sqrt x) 
+  ((iterative-improve
+     (lambda (y)
+       (< (abs (- (square y) x))
+          0.0001))
+     (lambda (y)
+       (average y (/ x y))))
+   1.0))
+
