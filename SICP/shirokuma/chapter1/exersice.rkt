@@ -82,22 +82,236 @@ imprope(4, 9)は、値として評価できるが、その後(sqrt x y)を再度
 
 ; こーいう時の為に、特殊評価規則がいるのね。
 
-
 ;1.7
+
+とりあえず、書籍のsqrtを組み立ててみる。
+
+(define (sqrt x) (sqrt-iter 1.0 x))
+(define (sqrt-iter guess x) 
+  (if (good-enough? guess x)
+    guess
+    (sqrt-iter (improve guess x) x)))
+(define (improve guess x) (average guess (/ x guess)))
+(define (average x y) (/ (+ x y) 2))
+(define (good-enough? guess x) (< (abs (- (square guess) x)) 0.001))
+
+何個か試してみた。
+
+小さすぎて失敗パターン
+(sqrt 0.0001) ; 結果が0.03230844833048122と明らかに違う。
+
+大きすぎて失敗パターン
+(sqrt 10000000000000) ; 結果が返ってこない。
+
+差分で判定する手続きを定義する。
+
+#lang racket
+
+(define (sqrt x) (sqrt-iter 1.0 x))
+(define (sqrt-iter guess x) 
+  (if (good-enough-ver2? guess x)
+    guess
+    (sqrt-iter (improve guess x) x)))
+(define (improve guess x) (average guess (/ x guess)))
+(define (average x y) (/ (+ x y) 2))
+(define (good-enough-ver2? guess x) (< (abs (- (improve guess x) guess)) 0.001))
+(define (square x) (* x x))
+
+失敗パターンを試してみる。
+(sqrt 0.00001)    ; 実行結果は、0.010120218365353947 となり、0.01に近い数値を出せている。
+(sqrt 10000000000000)  ;実行結果は、3162277.6601683795 となり結果が返ってきている。
+
+よって、推測値の差分を取るやり方に変更すれば、今まで計測に失敗していた小・大のsqrtについてうまく働くことがわかる。
+
 ;1.8
+
+#lang racket
+
+(define (cbrt x) (cbrt-iter 1.0 x))
+(define (cbrt-iter guess x) 
+  (if (good-enough? guess x)
+    guess
+    (cbrt-iter (improve guess x) x)))
+(define (improve guess x) (/ (+ (/ x (square guess)) (* 2 guess)) 3))
+(define (good-enough? guess x) (< (abs (- (improve guess x) guess)) 0.001))
+(define (square x) (* x x))
+
+; テスト
+(cbrt 0.001)
+(cbrt 1)
+(cbrt 8)
+(cbrt 27)
+(cbrt 28)
+(cbrt 1000)
+
+; 実行結果
+0.10001409266436927
+1.0
+2.000004911675504
+3.0000005410641766
+3.036589948018755
+10.000000145265767
+
+それっぽい値は出てるのでOK？
+
 ;1.9
+
+(define (+ a b)
+(if (= a 0) b (inc (+ (dec a) b)))) の場合、
+
+(+ 4 5) 
+((inc (+ (dec 4) 5)))
+((inc (+ 3 5)))
+((inc ((inc (+ 2 5)))))
+((inc ((inc ((inc (+ 1 5)))))))
+((inc ((inc ((inc ((inc (+ 0 5)))))))))
+((inc ((inc ((inc ((inc 5))))))))
+((inc ((inc ((inc (6)))))))
+((inc ((inc (7)))))
+((inc (8))
+(9)
+9
+
+となる。遅延演算による縮約が発生している為、再帰プロセスである。
+
+(define (+ a b)
+(if (= a 0) b (+ (dec a) (inc b))))の場合、
+
+(+ 4 5) 
+(+ (dec a) (inc b))
+(+ 3 6)
+(+ 2 7)
+(+ 1 8)
+(+ 0 9)
+9
+
+となる。遅延演算は発生していない。
+各ステップ実行の結果は、状態変数のみで管理される為、これは反復プロセスである。
+
 ;1.10
+
+(define (A x y) 
+  (cond
+    ((= y 0) 0)
+    ((= x 0) (* 2 y))
+    ((= y 1) 2)
+    (else (A (- x 1) (A x (- y 1))))))
+
+(A 1 10)
+(A (- 1 1) (A 1 (- 10 1)))
+(A 0 (A 1 9))
+(A 0 (A 0 (A 1 8)))
+(A 0 (A 0 (A 0 (A 1 7))))
+...
+(A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 1))))))))))
+(A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 2)))))))))
+(A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 4))))))))
+...
+(A 0 512)
+1024
+
+(A 2 4)
+(A 1 (A 2 3))
+(A 1 (A 1 (A 2 2)))
+(A 1 (A 1 (A 1 (A 2 1))))
+(A 1 (A 1 (A 1 2)))
+(A 1 (A 1 (A 0 (A 1 1))))
+(A 1 (A 1 (A 0 2)))
+(A 1 (A 1 4))
+(A 1 (A 0 (A 1 3)))
+(A 1 (A 0 (A 1 3)))
+...
+(A 1 (A 0 (A 0 (A 0 (A 1 1)))))
+(A 1 (A 0 (A 0 (A 0 2))))
+(A 1 16)
+(A 0 ...(15回) 2))
+2^15 * 2 = 2^16 = 65536
+
+(A 3 3)
+(A 2 (A 3 2))
+(A 2 (A 2 (A 3 1)))
+(A 2 (A 2 2))
+(A 2 (A 1 (A 2 1)))
+(A 2 (A 1 2))
+(A 2 4)
+65536
+
+数学的な定義を出してみる。
+
+(define (f n) (A 0 n))
+2n。(f n)の式の本体から明らか。
+
+(define (g n) (A 1 n))
+2^nな気がするが。。
+
+(define (h n) (A 2 n))
+2^2n ?（勘）
 
 ;1.11
 
-; 再帰
-これはただ書くだけ。
+再帰
 
-#lang sicp
+#lang racket
 
-(define (f n)
-    (if (< n 3) n
-        (+ (f (- n 1)) (f (- n 2)) (f (- n 3)))))
+(define (f x) 
+  (cond 
+    ((< x 3) x)
+    (else (+ (f (- x 1)) (f (- x 2)) (f (- x 3))))
+  )
+)
+
+; テスト
+(f 0)
+(f 1)
+(f 2)
+(f 3)
+(f 4)
+(f 5)
+
+; テスト結果
+0
+1
+2
+3
+6
+11
+
+あってるっぽい。
+
+反復
+
+状態変数として保持しておけば良いのは..
+
+* 現在の反復回数
+* n-1, n-2, n-3の3断面を持つ変数の4つ。
+
+(define (f x)
+  (f-iter XXX)
+)
+(define (f-iter n1 n2 n3 count)
+  (cond (= count 0) n3)
+  ()
+)
+
+
+#lang racket
+
+(define (f x) 
+  (cond 
+    ((< x 3) x)
+    (else (+ (f (- x 1)) (f (- x 2)) (f (- x 3))))
+  )
+)
+
+(f 0)
+(f 1)
+(f 2)
+(f 3)
+(f 4)
+(f 5)
+(f 6)
+(f 7)
+(f 8)
 
 
 ; 反復
@@ -206,6 +420,8 @@ TODO
 
 ; 1.20
 
+TODO
+
 ; 1.21
 
 #lang sicp
@@ -238,12 +454,52 @@ TODO
 (= n (smallest-divisor n)))
 
 (define (smallest-divisor n) (find-divisor n 2)) (define (find-divisor n test-divisor) 
-(cond ((> (square test-divisor) n) n) ((divides? test-divisor n) test-divisor) (else (find-divisor n (+ test-divisor 1))))) 
+(cond ((> (square test-divisor) n) n)((divides? test-divisor n) test-divisor) (else (find-divisor n (+ test-divisor 1))))) 
 (define (divides? a b) (= (remainder b a) 0)) 
 (define (square x) (* x x))
 
+; TODO 1.23~1.28
 
-解きかけ
+; 1.29
+
+#lang racket
+
+(define (integral-simpson f a b n)
+  (define h (/ (- b a) n))
+  (define (inc x) (+ x 1))
+  (define (y k)
+    (f (+ a (* k h))))
+  (define (term k)
+    (* (cond ((odd? k) 4)
+             ((or (= k 0) (= k n)) 1)
+             ((even? k) 2))
+       (y k)))
+  (/ (* h (sum term 0 inc n)) 3))
+(define (sum term a next b) (if (> a b)
+  0
+  (+ (term a)
+  (sum term (next a) next b))))
+
+; test
+
+;given
+(define (integral f a b dx) 
+  (define (add-dx x) (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b) dx))
+(define (cube x) (* x x x))
+
+;when & then
+(integral cube 0 1 0.01)
+(integral-simpson cube 0 1 0.01)
+
+; 1.30
+
+; 1.31
+
+; 1.32
+
+; 1.33
+
 
 
 
