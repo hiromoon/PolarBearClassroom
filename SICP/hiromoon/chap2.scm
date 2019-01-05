@@ -102,4 +102,54 @@
   (* (width rect) (height rect)))
 
 
+;practice2-4
+(define (cons x y)
+  (lambda (m) (m x y)))
+(define (car z)
+  (z (lambda (p q) p)))
+;(car (cons x y))
+;(car (lambda (m) (m x y)))
+;(lambda (lambda (p q) p) ((lambda (p q) p) x y))
+;((lambda (p q) p) x y)
+;((x y) x)
+;x
 
+;practice2-5
+(define (cons a b)
+  (*
+    (pow 2 a)
+    (pow 3 b)))
+
+(define (car n)
+  (if (not (= (remainder n 2) 0))
+    0
+    (+ 1 (car (quotient n 2)))
+  ))
+(define (cdr n)
+  (if (not (= (remainder n 3) 0))
+    0
+    (+ 1 (car (quotient n 3)))
+  ))
+
+;practice2-6
+(define zero (lambda (f) (lambda (x) x)))
+(define (add-1 n)
+  (lambda (f) (lambda (x) (f ((n f) x)))))
+
+(define one
+  (lambda (f)
+    (lambda (x) (f x))))
+
+(define two
+  (lambda (f)
+    (lambda (x) (f (f x)))))
+
+(define (plus f g)
+    (lambda (h) 
+      (lambda (x)
+        ((f h) ((g h) x)))))
+
+(define (succ n) (+ n 1))
+
+(((plus one two) succ) 0) ;3
+(((plus two two) succ) 0) ;4
