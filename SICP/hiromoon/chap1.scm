@@ -290,3 +290,597 @@
 ;(gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
 ;...
 
+
+;practice1-21
+(define (smallest-divisor n) (find-divisor n 2)) (define (find-divisor n test-divisor)
+(cond ((> (square test-divisor) n) n)
+((divides? test-divisor n) test-divisor) (else (find-divisor n (+ test-divisor 1)))))
+(define (divides? a b) (= (remainder b a) 0))
+
+;199   -> 199
+;1999  -> 1999
+;19999 -> 7
+
+;practice1-22
+#lang sicp
+
+(define (timed-prime-test n) (newline)
+(display n)
+(start-prime-test n (runtime)))
+(define (start-prime-test n start-time) (if (prime? n)
+(report-prime (- (runtime) start-time)))) (define (report-prime elapsed-time)
+(display " *** ") (display elapsed-time))
+
+(define (prime? n)
+(= n (smallest-divisor n)))
+
+(define (smallest-divisor n) (find-divisor n 2)) (define (find-divisor n test-divisor)
+(cond ((> (square test-divisor) n) n)
+((divides? test-divisor n) test-divisor) (else (find-divisor n (+ test-divisor 1)))))
+(define (divides? a b) (= (remainder b a) 0))
+  
+(define (square n) (* n n))
+
+(define (search-for-primes n max)
+  (cond ((< max n) (display "finish"))
+        (else (timed-prime-test n) (search-for-primes (+ n 2) max))
+;1009,   1013,   1019
+;10007,  10009,  10037
+;100003, 100019, 100043
+
+;practice1-23
+(define (timed-prime-test n) (newline)
+(display n)
+(start-prime-test n (runtime)))
+(define (start-prime-test n start-time) (if (prime? n)
+(report-prime (- (runtime) start-time)))) (define (report-prime elapsed-time)
+(display " *** ") (display elapsed-time))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(define (smallest-divisor n) (find-divisor n 2))
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (next test-divisor)))))
+(define (divides? a b) (= (remainder b a) 0))
+  
+(define (square n) (* n n))
+
+(define (search-for-primes n max)
+  (cond ((< max n) (display "finish"))
+        (else (timed-prime-test n) (search-for-primes (+ n 2) max))
+      ))
+(define (next n)
+  (cond ((= n 2) 3)
+        (else (+ n 2))))
+
+;practice1-24
+(define (expmod base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (remainder
+           (square (expmod base (/ exp 2) m))
+           m))
+        (else
+          (remainder
+            (* base (expmod base (- exp 1) m))
+            m))))
+
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond ((= times 0) true)
+        ((fermat-test n) (fast-prime? n (- times 1)))
+        (else false)))
+
+(define (timed-prime-test n) (newline)
+  (display n)
+  (start-prime-test n (runtime)))
+
+(define (start-prime-test n start-time)
+  (if (fast-prime? n 10000) (report-prime (- (runtime) start-time))))
+(define (report-prime elapsed-time)
+  (display " *** ")
+  (display elapsed-time))
+
+(timed-prime-test 1009)   ;1009   *** 15713 *** 406
+(timed-prime-test 1013)   ;1013   *** 16156 *** 4
+(timed-prime-test 1019)   ;1019   *** 18369 *** 3
+(timed-prime-test 10007)  ;10007  *** 23090 *** 8
+(timed-prime-test 10009)  ;10009  *** 20068 *** 8
+(timed-prime-test 10037)  ;10037  *** 20398 *** 8
+(timed-prime-test 100043) ;100043 *** 24081 *** 24
+(timed-prime-test 100003) ;100003 *** 28211 *** 25
+(timed-prime-test 100019) ;100019 *** 24688 *** 24
+
+;practice1-25
+(define (fast-expt b n)
+  (cond ((= n 0) 1)
+        ((even? n) (square (fast-expt b (/ n 2))))
+        (else (* b (fast-expt b (- n 1))))))
+(define (even? n)
+  (= (remainder n 2) 0))
+(define (expmod base exp m)
+  (remainder (fast-expt base exp) m))
+
+;1009   *** 3494
+;1013   *** 170
+;1019   *** 163
+;10007  *** 49393
+;10009  *** 5770
+;10037  *** 5286
+;100003 *** 321562
+;100019 *** 258125
+;100043 *** 272366
+
+;practice1-26
+;偶数の場合にexpmodが2回呼ばれるため
+;expmod(4/2) -> 2 -> expmod(2/2) -> 1 -> expmod(1) => 3回 
+;expmod(4/2)expmod(4/2) -> 2 2 -> expmod(2/2)expmod(2/2) expmod(2/2)expmod(2/2) -> expmod(1) .. => 10回
+
+;practice1-27
+;全部falseになった
+;[カーマイケル数](https://ja.wikipedia.org/wiki/%E3%82%AB%E3%83%BC%E3%83%9E%E3%82%A4%E3%82%B1%E3%83%AB%E6%95%B0)
+(fermat-test 561)
+(fermat-test 1105)
+(fermat-test 1729)
+(fermat-test 2465)
+(fermat-test 2821)
+(fermat-test 6601)
+(fermat-test 8911)
+
+;practice1-28
+;回答動いたけどよくわからん
+(define (miller-rabin-test n) 
+  (define (try-it a)
+    (define (check-it x)
+      (and (not (= x 0)) (= x 1))
+    (check-it (expmod a (- n 1) n))))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (expmod base exp m)
+  (define (square-with-check x)
+    (define (check-nontrivial-sqrt1 n square)
+      (if (and (= square 1)
+               (not (= x 1))
+               (not (= x (- m 1))))
+        0
+        square))
+    (check-nontrivial-sqrt1 x (remainder (square x) m)))
+  (cond ((= exp 0) 1)
+        ((even? exp) (square-with-check (expmod base (/ exp 2) m)))
+        (else
+          (remainder (* base (expmod base (- exp 1) m))
+                     m))))
+
+
+
+(miller-rabin-test 1009)   
+(miller-rabin-test 1013)   
+(miller-rabin-test 1019)   
+(miller-rabin-test 10007)  
+(miller-rabin-test 10009)  
+(miller-rabin-test 10037)  
+(miller-rabin-test 100043) 
+(miller-rabin-test 100003) 
+(miller-rabin-test 100019) 
+
+(miller-rabin-test 561)
+(miller-rabin-test 1105)
+(miller-rabin-test 1729)
+(miller-rabin-test 2465)
+(miller-rabin-test 2821)
+(miller-rabin-test 6601)
+(miller-rabin-test 8911)
+
+;practice1-29
+(define (cube x) (* x x x))
+
+(define (sum term a next b)
+  (if (a > b)
+    0
+    (+ (term a)
+       (sum term (next a) b))))
+
+(define (integral f a b dx)
+  (define (add-dx x)
+    (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b)
+     dx))
+
+(define (inc n) (+ n 1))
+
+(define (simpson f a b n)
+  (define h (/ (- b a) n))
+  (define (y a k)
+    (+ a (* h k)))
+  (define (coef k)
+    (cond ((or (= k 0) (= k n)) 1)
+          ((even? k) 2)
+          (else 4)))
+  (define (term k) 
+    (* (coef k) (f (y a k))))
+  (* (/ h 3)
+     (sum term 0 inc n)))
+
+(integral cube 0 1 0.01)  ;0.24998750000000042
+(integral cube 0 1 0.001) ;0.249999875000001
+(simpson cube 0 1 100)    ;0.24999999999999992
+(simpson cube 0 1 1000)   ;0.2500000000000002
+
+;practice1-30
+(define (sum term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ result (term a)))))
+  (iter a 0))
+
+(sum 1 cube inc 10) ;3025
+
+;practice1-31
+;a 線形再帰
+(define (product term a next b)
+  (if (> a b)
+       1
+       (* (term a)
+          (product term (next a) b))))
+;b 反復
+(define (product term a next b)
+  (define (iter a result)
+    (if (> a b)
+      result
+      (iter (next a) (* result (term a)))))
+  (iter a 1))
+
+;factorial
+(define (factorial n) 
+  (define (identity x) x)
+  (define (inc n) (+ n 1))
+  (product identity 1 inc n))
+
+(factorial 2)
+(factorial 3)
+(factorial 4)
+(factorial 5)
+
+;pi
+(define (pi k) 
+  ;分母 x_i = 3 + 2(i / 2)
+  (define (numerator i)
+        (+ 3.0 (* (quotient i 2.0) 2)))
+  ;分子
+  (define (denominator i)
+        (+ 2.0 (* 2 (quotient (+ i 1) 2.0))))
+  (* 4 (/ (product denominator 0 inc k)
+     (product numerator 0 inc k))))
+
+(pi 10) ;3.023170192001361
+
+;practice1-32
+;a 再帰プロセス
+(define (accumulate combiner null-value term a next b) 
+  (if (> a b)
+    null-value
+    (combiner
+      a
+      (accumulate combiner null-value term (next a) next b))))
+
+(define (sum term a next b)
+  (define (combiner a acc) (+ acc a))
+  (accumulate combiner 0 term a next b))
+
+(define (product term a next b)
+  (define (combiner a acc) (* acc a))
+  (accumulate combiner 1 term a next b))
+
+(define (identity x) x)
+(define (inc n) (+ n 1))
+
+(sum identity 1 inc 10)
+(product identity 1 inc 10)
+
+;b 線形プロセス
+(define (accumulate combiner null-value term a next b)
+  (define (iter a acc)
+    (if (> a b)
+      acc
+      (iter (next a) (combiner a acc))))
+  (iter a null-value))
+
+(define (sum term a next b)
+  (define (combiner a acc) (+ acc a))
+  (accumulate combiner 0 term a next b))
+
+(define (product term a next b)
+  (define (combiner a acc) (* acc a))
+  (accumulate combiner 1 term a next b))
+
+(define (identity x) x)
+(define (inc n) (+ n 1))
+
+(sum identity 1 inc 10)
+(product identity 1 inc 10)
+
+;practice1-33
+(define (filtered-accumulate filter combiner null-value term a next b)
+  (define (iter a acc)
+    (if (> a b)
+      acc
+      (if (filter a)
+        (iter (next a) (combiner a acc))
+        (iter (next a) acc)))
+  (iter a null-value))
+
+;a 素数の2乗和
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(define (smallest-divisor n) (find-divisor n 2))
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (next test-divisor)))))
+(define (divides? a b) (= (remainder b a) 0))
+  
+(define (square n) (* n n))
+
+(define (square-prime-sum)
+  (define (combiner a acc) (+ a acc))
+  (filtered-accumulate prime? combiner 0 identity a inc b))
+
+;b GCD(i, n) = 1
+(define (product-gcd a b)
+  (define (filter a) (= (gcd a b) 1))
+  (define (combiner a acc) (* a acc))
+  (filtered-accumulate filter combiner 1 identity a inc b))
+
+(define (gcd a b)
+  (if (= b 0)
+    a
+    (gcd b (remainder a b))))
+
+;practice1-34
+(define (f g) (g 2))
+(f f)
+;(f (f 2))
+;(f (2 2))
+;2は手続きではなく値じゃないので不正だと解釈される
+
+;practice1-35
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+
+(fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0)
+
+;practice1-36
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (display guess)
+    (newline)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+
+(define (average v1 v2)
+  (/ (+ v1 v2) 2.0))
+;通常
+(fixed-point (lambda (x) (/ (log  1000) (log x))) 10.0)
+;平均緩和法
+(fixed-point (lambda (x) (average x (/ (log  1000) (log x)))) 10.0)
+;step 通常             平均緩和法
+;1  10.0               10.0
+;2  2.9999999999999996 6.5
+;3  6.2877098228681545 5.095215099176933
+;4  3.7570797902002955 4.668760681281611
+;5  5.218748919675316  4.57585730576714
+;5  4.1807977460633134 4.559030116711325
+;6  4.828902657081293  4.55613168520593
+;7  4.386936895811029  4.555637206157649
+;8  4.671722808746095  4.55555298754564
+;9  4.481109436117821  4.555538647701617
+;10 4.605567315585735  4.555536206185039
+;11 4.522955348093164
+;12 4.577201597629606
+;13 4.541325786357399
+;14 4.564940905198754
+;15 4.549347961475409
+;16 4.5596228442307565
+;17 4.552843114094703
+;18 4.55731263660315
+;19 4.554364381825887
+;19 4.556308401465587
+;20 4.555026226620339
+;21 4.55587174038325
+;22 4.555314115211184
+;23 4.555681847896976
+;24 4.555439330395129
+;25 4.555599264136406
+;26 4.555493789937456
+;27 4.555563347820309
+;28 4.555517475527901
+;29 4.555547727376273
+;30 4.555527776815261
+;31 4.555540933824255
+;32 4.555532257016376
+
+;practice1-37
+;リンク先によると間違ってるらしいけど違いがよくわからなかった
+;http://community.schemewiki.org/?sicp-ex-1.37
+;a
+(define (cont-frac n d k)
+  (if (= k 0) 0
+    (/ (n k) (+ (d k) (cont-frac n d (- k 1))))))
+
+(cont-frac (lambda (i) 1.0)
+           (lambda (i) 1.0)
+           100)
+
+;b
+(define (cont-frac n d k)
+  (define (loop i result)
+    (if (= i 0) 
+      result
+      (loop (- i 1) (/ (n i) (+ (d i) result)))))
+  (loop k 0))
+
+;practice1-38
+(+ 2.0 (cont-frac (lambda (i) 1.0)
+           (lambda (i) 
+             (define x (remainder i 3))
+             (if (or (= x 0) (= x 2)) 1
+               (* 2 (+ (quotient i 3) 1))))
+           100))
+
+;practice1-39
+;cont-fracが使えるっぽい(?)
+(define (tan-cf x k)
+  (define (square x) (* x x))
+  (define (n i)
+    (if (= i 0)
+      x
+      (square x)))
+  (define (d i) (+ 1 (* i 2)))
+  (define (loop i result)
+    (if (= i 0)
+      result
+      (loop (- i 1) (/ (n i) (- (d i) result)))))
+  (loop k 0))
+
+(tan-cf 90 100)
+
+;practice1-40
+(define (newton-transform g)
+  (lambda (x) (- x (/ (g x) ((deriv g) x)))))
+(define (newtons-method g guess) 
+  (fixed-point (newton-transform g) guess))
+(define dx 0.00001)
+(define (deriv g)
+  (lambda (x) (/ (- (g (+ x dx)) (g x)) dx)))
+
+;よくわかんなかったので答え見た
+;http://community.schemewiki.org/?sicp-ex-1.40
+(define (cubic a b c) 
+  (define (cube x) (* x x x))
+  (define (square x) (* x x))
+  (lambda (x)
+    (+ 
+      (cube x)
+      (* a (square x))
+      (* b x)
+      c)))
+
+;practice1-41
+(define (double f)
+  (lambda (x) (f (f x))))
+
+(define (inc n) (+ n 1))
+(((double (double double)) inc) 5)
+;21
+
+;practice1-42
+(define (square n) (* n n))
+(define (inc n) (+ n 1))
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+(define (test actual expected)
+  (if (= actual expected)
+    (display "OK")
+    (display "NG")))
+
+(test ((compose square inc) 6) 49)
+
+;practice1-43
+(define (repeated f n)
+  (if (= n 1)
+    f
+    (compose f (repeated f (- n 1)))))
+
+(test ((repeated square 2) 5) 625)
+
+;practice1-44
+(define dx 0.00001)
+(define (smooth f)
+  (define (average v1 v2 v3) 
+    (/ (+ v1 v2 v3) 3))
+  (lambda (x) (average (f (- x dx)) (f x) (f (+ x dx)))))
+
+(define (n-fold-smoothed f n)
+  ((repeated smooth n) f))
+
+;practice1-45
+;よくわからなかったので一旦スキップ
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (display guess)
+    (newline)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+
+(define (average-damp f)
+  (define (average v1 v2)
+    (/ (+ v1 v2) 2))
+  (lambda (x) (average x (f x))))
+
+(define (n-sqrt x n) 
+  (fixed-point ((repeated average-damp (- n 1)) (lambda (y) (/ x ())))
+               1.0))
+
+;practice1-46
+;めんどかったのでコピペ
+;http://community.schemewiki.org/?sicp-ex-1.46
+(define (iterative-improve close-enough? improve-guess) 
+  (lambda (first-guess)
+    (define (try guess)
+      (if (close-enough? guess next)
+        next
+        (try next))
+    (try first-guess))))
+
+(define (close-enough? v1 v2)
+  (< (abs (- v1 v2)) tolerance))
+
+(define (fixed-point f first-guess)
+  ((iterative-improve
+     (lambda (x) (close-enough? x (f x)))
+     f)
+   first-guess))
+
+(define (sqrt x) 
+  ((iterative-improve
+     (lambda (y)
+       (< (abs (- (square y) x))
+          0.0001))
+     (lambda (y)
+       (average y (/ x y))))
+   1.0))
+
