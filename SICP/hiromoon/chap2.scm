@@ -50,6 +50,56 @@
       (make-point 3 3))))
 
 ;practice2-3
-(define (make-rect x y w h))
-(define (get-round rect))
-(define (get-area rect))
+;first implementation
+(define (make-rect left-bottom right-top) 
+  (cons 
+    (make-segment
+      left-bottom
+      (make-point (x-point right-top) (y-point left-bottom)))
+    (make-segment
+      left-bottom
+      (make-point (x-point left-bottom) (y-point right-top)))))
+
+(define (pow x exp)
+  (if (= exp 0)
+    1
+    (* x (pow x (- exp 1)))))
+
+(define (length segment) 
+  (let ((p1 (start-segment segment))
+        (p2 (end-segment segment)))
+    (sqrt
+      (+
+        (pow 
+          (- (x-point p2) (x-point p1))
+          2)
+        (pow
+          (- (y-point p2) (y-point p1))
+          2)))))
+
+(define (width rect)
+  (length (car rect)))
+(define (height rect)
+  (length (cdr rect)))
+
+;second implementation
+(define (make-rect left-bottom width height)
+  (cons left-bottom (cons width height)))
+
+(define (width rect)
+  (car (cdr rect)))
+
+(define (height rect)
+  (cdr (cdr rect)))
+
+
+(define (round rect)
+  (*
+    2
+    (+ (width rect) (height rect))))
+
+(define (area rect)
+  (* (width rect) (height rect)))
+
+
+
