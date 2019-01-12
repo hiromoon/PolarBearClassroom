@@ -201,11 +201,11 @@
 
 ;practice2-18
 (define (reverse l)
-  (if (null? (cdr l))
-    (list (car l))
-    (append
-      (reverse (cdr l))
-      (list (car l)))))
+  (if (null? l)
+    null
+    (cons
+      (car l)
+      (reverse (cdr l)))))
 
 (reverse (list 1 4 9 16 25))
 
@@ -259,3 +259,114 @@
   (map square items))
 
 (square-list (list 1 2 3 4))
+
+;practice2-22
+;1. 処理した結果をリストの先頭に追加して反復しているから
+;2. 値と次のノードへの参照が逆転して、リストの構造にならないから
+
+;practice2-23
+(define (for-each fun l)
+  (define (iter fun l)
+    (fun (car l))
+    (if (null? (cdr l))
+      0
+      (iter fun (cdr l))))
+  (iter fun l))
+
+;practice2-24
+;末尾だけ参照になっていないリスト構造なのは明白なのでスキップ
+
+;practice2-25
+(car (cdr (car (cdr (cdr (list 1 3 (list 5 7) 9))))))
+(car (car (list (list 7))))
+(cadr (cadr (cadr (cadr (cadr (cadr (list 1 (list 2 (list 3 (list 4 (list 5 (list 6 7))))))))))))
+
+;practice2-26
+(define x (list 1 2 3))
+(define y (list 4 5 6))
+
+(append x y) ;'(1 2 3 4 5 6)
+(cons x y)   ;'((1 2 3) 4 5 6)
+(list x y)   ;'((1 2 3) (4 5 6))
+
+;practice2-27
+(define (reverse l)
+  (define (iter xs acc) 
+    (if (null? xs)
+      acc
+      (iter
+        (cdr xs)
+        (cons (car xs) acc))))
+  (iter l null))
+
+(define (deep-reverse l) 
+  (define (iter xs acc) 
+    (if (null? xs)
+      acc
+      (iter
+        (cdr xs)
+        (cons
+          (if (pair? (car xs)) 
+            (deep-reverse (car xs))
+            (car xs))
+          acc))))
+  (iter l null))
+
+(define x (list (list 1 2) (list 3 4)))
+(reverse x)
+(deep-reverse x)
+
+;practice2-28
+(define (fringe xs)
+  (define (exec xs)
+    (define (iter xs acc)
+      (if (null? xs) 
+        acc
+        (iter
+          (cdr xs)
+          (append
+            (if (pair? (car xs))
+              (exec (car xs))
+              (list (car xs)))
+            acc))))
+    (iter xs (list)))
+  (reverse (exec xs)))
+
+(define x (list (list 1 2) (list 3 4))
+(fringe x)
+(fringe (list x x))
+
+;practice2-29
+(define (make-mobile left right)
+  (list left right))
+
+(define (make-branch length structure)
+  (list length structure))
+
+;a
+(define left-branch car)
+(define right-branch cdr)
+
+(define branch-length car)
+(define branch-structure cdr)
+
+;b
+(define (total-weight mobile)
+  (+
+    (if (pair?  (branch-structure (left-branch mobile)))
+      (total-weight (branch-structure (left-branch mobile)))
+      (branch-structure (left-branch mobile)))
+    (if (pair?  (branch-structure (left-branch mobile)))
+      (total-weight (branch-structure (left-branch mobile)))
+      (branch-structure (left-branch mobile)))))
+
+;c
+(define (balanced? mobile) 
+  (let ((left (left-branch mobile))
+        (right (right-branch mobile)))
+    (= 
+      (* (branch-length left) (total-weight (branch-structure left)))
+      (* (branch-length right) (total-weight (branch-structure right))))))
+
+;d
+;特に変更は必要ない
