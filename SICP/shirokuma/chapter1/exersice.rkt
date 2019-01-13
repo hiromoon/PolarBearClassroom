@@ -537,6 +537,35 @@ TODO
 ; 120
 (factorial 5)
 
+; πの近似
+
+#lang racket
+
+(define (factorial x)
+  (product identity 1 inc x))
+(define (pie n)
+  (/
+   (* (product f 2 inc2 (* 2 n)) 4.00)
+      (product square 3 inc2 (+ (* 2 n) 1))))
+(define (product term a next b)
+  (if (> a b)
+      1
+      (* (term a)
+         (product term (next a) next b))))
+(define (inc x) (+ x 1))
+(define (inc2 x) (+ x 2))
+(define (identity x) x)
+(define (square x) (* x x))
+(define (f x) (* x (+ x 2)))
+
+; test
+(pie 1)
+(pie 10)
+(pie 50)
+; +inf.0　ってなんやねん
+(pie 100)
+
+
 ; 1.32
 
 
