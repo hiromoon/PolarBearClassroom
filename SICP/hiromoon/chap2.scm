@@ -414,9 +414,89 @@
         (list 6 7)))
 
 ;practice2-32
-
 (define (subsets s)
   (if (null? s)
     (list null)
     (let ((rest (subsets (cdr s))))
-      (append rest (map subsets rest)))))
+      (append rest
+              (map
+                (lambda (x) (cons (car s) x))
+                rest)))))
+;http://community.schemewiki.org/?sicp-ex-2.32
+;リストの先頭から順にドリルダウンしていって、
+;先頭とそのサブセットの組み合わせをmapで作成している
+
+;practice2-33
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (map p sequence)
+  (accumulate (lambda (x y) (cons (p x) y)) nil sequence))
+
+(map (lambda (x) (* x x) (list 1 2 3)))
+
+(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+(append (list 1 2 3) (list 4 5 6))
+
+(define (length sequence)
+  (accumulate (lambda (_ x) (+ x 1)) 0 sequence))
+
+(length (list 1 2 3))
+
+;practice2-34
+(define (honer-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms)
+                (+ (* higher-terms x) this-coeff))
+              0
+              coefficient-sequence))
+
+(honer-eval 2 (list 1 3 0 5 0 1))
+
+;practice2-35
+(define (count-leaves t)
+  (accumulate
+    +
+    0
+    (map (lambda (b)
+           (cond ((null? b) 0)
+                 ((not (pair? b)) 1)
+                 (else (count-leaves b))))
+         t)))
+
+(define x (cons (list 1 2) (list 3 4)))
+(count-leaves x) ;4
+
+;practice2-36
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+    null
+    (cons (accumulate op init (map car seqs))
+          (accumulate-n op init (map cdr seqs)))))
+
+(define s (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+(accumulate-n + 0 s); (22 26 30)
+
+;practice2-37
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (mj) (map * v mj)) m))
+
+(define (transpose mat)
+  (accumulate-n cons null mat))
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (mi ni) (map * mi ni) m n)))
+
+(define m (list (list 1 2 3 4) (list 4 5 6 6) (list 6 7 8 9)))
+
+(dot-product (car m) (car m))
+(matrix-*-vector m (car m)) 
+(transpose m)
