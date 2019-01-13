@@ -491,10 +491,55 @@ TODO
 (integral-simpson cube 0 1 100)
 
 ; 1.30
+#lang racket
+
+;; 再帰
+(define (sum term a next b) (if (> a b)
+  0
+  (+ (term a)
+  (sum term (next a) next b))))
+
+;; 反復
+(define (sum-itr term a next b) 
+  (define (iter a result)
+    (if (> a b) 
+      result
+      (iter (next a) (+ result (term a)))))
+  (iter a 0))
+
+; test 
+(define (inc x) (+ x 1))
+(define (identity x) x)
+; 55
+(sum identity 0 inc 10) 
+; 55
+(sum-itr identity 0 inc 10) 
 
 ; 1.31
 
+#lang racket
+
+(define (factorial x)
+  (product identity 1 inc x))
+(define (product term a next b)
+  (if (> a b)
+      1
+      (* (term a)
+         (product term (next a) next b))))
+(define (inc x) (+ x 1))
+(define (identity x) x)
+
+; test
+; 1
+(factorial 0)
+; 1
+(factorial 1)
+; 120
+(factorial 5)
+
 ; 1.32
+
+
 
 ; 1.33
 
