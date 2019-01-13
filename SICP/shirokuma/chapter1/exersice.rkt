@@ -562,13 +562,6 @@ TODO
 ; 返ってこねぇぇぇぇぇぇ
 (pie 100000)
 
-; test
-(pie 1)
-(pie 10)
-(pie 50)
-; nが大きいと、+inf.0となり計算できない 
-(pie 100)
-
 
 ; 反復product
 #lang racket
