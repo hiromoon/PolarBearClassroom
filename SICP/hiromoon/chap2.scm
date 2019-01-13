@@ -1,4 +1,4 @@
-;practice2-1
+
 (define (make-rat n d)
   (if (and (> 0 n) (> 0 d))
     (cons (abs n) (abs d))
@@ -199,7 +199,10 @@
 
 (last-pair (list 23 72 149 34))
 
-;practice2-18
+ubsets s) (if (null? s)
+(list nil)
+(let ((rest (subsets (cdr s))))
+(append rest (map ⟨??⟩ rest)))))practice2-18
 (define (reverse l)
   (if (null? l)
     null
@@ -493,10 +496,34 @@
 
 (define (matrix-*-matrix m n)
   (let ((cols (transpose n)))
-    (map (lambda (mi ni) (map * mi ni) m n)))
+    (map (lambda (mi ni) (map * mi ni)) m n)))
 
 (define m (list (list 1 2 3 4) (list 4 5 6 6) (list 6 7 8 9)))
+(define n (list (list 1 4 6) (list 2 5 7) (list 3 6 8) (list 4 6 9)))
 
 (dot-product (car m) (car m))
 (matrix-*-vector m (car m)) 
 (transpose m)
+(matrix-*-matrix m n)
+
+;practice2-38
+(define fold-right accumulate)
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+      result
+      (iter (op result (car rest)) (cdr rest))))
+  (iter initial sequence)) 
+
+(fold-right / 1 (list 1 2 3)) ;1+1/2
+(fold-left / 1 (list 1 2 3)); 1/6
+(fold-right list nil (list 1 2 3)) ;(1 (2 (3 ())))
+(fold-left list nil (list 1 2 3)) ;(((() 1) 2) 3)
+; 交換則: 計算の順序が変わっても同じ答えになる
+
+;practice2-39
+(define (reverse sequence)
+  (fold-right (lambda (x y) (append y (list x))) null sequence))
+
+(define (reverse sequence)
+  (fold-right (lambda (x y) (append (list y) x)) null sequence))
