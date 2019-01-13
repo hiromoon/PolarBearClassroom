@@ -1,3 +1,6 @@
+#２章の目的は
+単純なデータオブジェクト(数値、文字）を組み合わせて、複合オブジェクト（分数、有理数、区間など）の作成を行う。
+
 # 2-1: 有理数の数値演算
 有理数の数値演算の実装を行う。
 有理数を用いた加算、除算、乗算、減算を行う。
@@ -160,5 +163,88 @@ ex) 2.34 (± 2.3)
    x
    (make-interval (/ 1.0 (lower-bound y))
                   (/ 1.0 (upper-bound y)))))
+```
+# 2.2.1 列の表現
+ペアを使って構築できる便利な構造のひとつに列がある。
+(オブジェクトの順序つき集合です。）
+Lispでは単結合リストはlis()で宣言可能である。
+
+# 2.2.2 リスト演算
+ペアを使って要素の列をリストとして表現するやり方は、リストを'cdrダウン'していくという
+確立されたプログラミングテクニックとセットになっています。
+例えば、list-ref手続きは引数としてリストと引数nを取り、リストn番目のものを返します。
+
+```lisp
+(define (list-ref items n)
+  (if (= n 0)
+      (car items)
+      (list-ref (cdr items) (- n 1))))
+```
+
+List全体をcrdダウンすることもよくあります。
+そのためにSchemeは基本z述語nil?を持っています。
+
+```lisp
+(define (length items)
+  (if (null? items)
+      0
+      (+ (length (cdr items)))))
+```
+
+もうひとつの確立されたプログラミングテクニックは、リストをcdrダウンしながら答えのリストを"consアップ"するというものです。
+これは、次のappend手続きで使われます。
+
+* もしlist1がからリストであれが、結果はlist2である。
+* そうでなければ、list1のcdrとlist2をappendし、その結果にlist1のcarをconsする。
+
+```lisp
+(define (append list1 list2)
+  (if (null?  list1)
+      list2
+      (cons (car list1) (append (cdr list1) list2))))
+```
+
+### リストに対するマップ
+非常に便利なえんざんとして　、リストのそれぞれの要素に何らかの変換を適用し、結果のリストを返すというものがあります。
+例えば、次の手続きは、与えられた係数をリストのそれぞれの数値にかけます。
+```lisp
+(define (scale-list items factor)
+  (if (null? items)
+      nil
+      (cons (* (car items) factor)
+            (scale-list (cdr items)
+                         factor))))
+
+(scale-list (list 1 2 3 4 5) 10)
+```
+このscale-listはさらに抽象化させた手続きmapに昇華させることが可能です。
+```lisp
+(define (map proc items)
+  (if (null? items)
+      nil
+      (cons (proc (car items))
+            (map proc (cdr items)))))
+```
+これを使用して、scale-listの新しいて技を書くことができます。
+
+```lisp
+(define (scale-list items factor)
+  (map (lambda (x) (* x factor))
+       items))
+```
+mapは重要ながいねですが、それはmapが共通パターンを捉えているという理由からだけではありません。
+mapを定義することで、scale-listの定義は**プロセスに焦点を当てた定義をすることが可能になっています。**これは、listからlistを返すプロセスに抽象化の壁を設けることをしたことで可能になります。
+
+    
+### 2.2.2 階層構造
+list内にlistを定義することで階層構造を構築することが可能です。
+これらに関して、葉の要素がいくつあるかをカウントするための関数は下記の様に定義します。
+
+```lisp
+(define (count-leaves x)
+  (cond ((null? x) 0)
+        ((not (pair? x)) 1)
+        (else (+ (count-leaves (car x))
+                 (count-leaves (cdr x))))))
 ```
 
