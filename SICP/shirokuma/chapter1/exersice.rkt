@@ -562,9 +562,26 @@ TODO
 (pie 1)
 (pie 10)
 (pie 50)
-; +inf.0　ってなんやねん
+; nが大きいと、+inf.0となり計算できない 
 (pie 100)
 
+
+; 反復product
+#lang racket
+
+(define (factorial x)
+  (product-itr identity 1 inc x))
+(define (product-itr term a next b)
+  (define (itr a result)
+    (if (> a b)
+      result
+      (itr (next a) (* result (term a)))))
+  (itr a 1))
+(define (inc x) (+ x 1))
+(define (identity x) x)
+
+; 120
+(factorial 5)
 
 ; 1.32
 
