@@ -370,3 +370,53 @@
 
 ;d
 ;特に変更は必要ない
+
+;practice2-30
+(define (square-tree tree)
+  (define (square x) (* x x))
+  (cond ((null? tree) null)
+        ((not (pair? tree)) (square tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+(square-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+(define (square-tree tree)
+  (define (square x) (* x x))
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree)
+           (square-tree sub-tree)
+           (square sub-tree)))
+       tree))
+
+(square-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+;practice2-31
+(define (square x) (* x x))
+(define (square-tree tree) (tree-map square tree))
+
+(define (tree-map func tree) 
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree) 
+           (tree-map func sub-tree)
+           (func sub-tree)))
+       tree))
+
+(square-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+;practice2-32
+
+(define (subsets s)
+  (if (null? s)
+    (list null)
+    (let ((rest (subsets (cdr s))))
+      (append rest (map subsets rest)))))
