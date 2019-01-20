@@ -527,3 +527,41 @@ ubsets s) (if (null? s)
 
 (define (reverse sequence)
   (fold-right (lambda (x y) (append (list y) x)) null sequence))
+
+;practice2-40
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(define (enumerate-interval start end)
+  (define (iter n acc)
+    (if (> n end)
+      acc
+      (iter (cons n acc))))
+  (reverse (iter start null)))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum?
+               (unique-pairs n))))
+
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (map (lambda (j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+             (enumerate-interval 1 n)))
+
+;practice2-41
+(define (flatmap proc seq)
+  (accumulate cons null (map proc seq)))
+
+(define (find-sum ans seqs)
+  (filter (lambda (ns) (= (accumulate + 0 ns) ans)) seqs))
+
+(define seq (list (list 1 2 3) (list 2 3 4)))
+(find-sum 6 seq)
