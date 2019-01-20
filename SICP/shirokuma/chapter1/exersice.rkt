@@ -559,9 +559,8 @@ TODO
 
 ; 3.1417497057380523
 (pie 10000)
-; 返ってこねぇぇぇぇぇぇ
+; 実行完了に5分くらいかかった
 (pie 100000)
-
 
 ; 反復product
 #lang racket
@@ -584,9 +583,73 @@ TODO
 
 ; 1.32
 
+#lang racket
 
+; 再帰
+(define (accumulate combiner null-value term a next b)
+  (if (> a b)
+    null-value
+    (combiner (term a)
+              (accumulate combiner null-value term (next a) next b))
+  )
+)
+; 反復
+(define (accumulate-itr combiner null-value term a next b)
+  (define (itr a result) 
+      (if (> a b)
+          result
+          (itr (next a) (combiner result (term a)))
+      ))
+  (itr a null-value))
+
+; Test
+
+; Given
+(define (inc x) (+ x 1))
+(define (identity x) x)
+
+; When & Then
+(accumulate + 0 identity 0 inc 5) ; 15
+(accumulate + 0 identity 1 inc 5) ; 15
+(accumulate * 1 identity 0 inc 5) ; 0
+(accumulate * 1 identity 1 inc 5) ; 120
+
+(accumulate-itr + 0 identity 0 inc 5) ; 15
+(accumulate-itr + 0 identity 1 inc 5) ; 15
+(accumulate-itr * 1 identity 0 inc 5) ; 0
+(accumulate-itr * 1 identity 1 inc 5) ; 120
+
+; メモ
+; 余分な括弧でかなりはまった。(define (hoge x)(if (...)))
 
 ; 1.33
+
+(define (filtered-accumulate pred combiner null-value term a next b)
+  (if (> a b)
+    null-value
+    (if (pred)
+      (combiner (term a)
+                (filtered-accumulate pred combiner null-value term (next a) next b)))
+      null-value
+    )
+  )
+)
+
+; Test
+; Given
+define (prime? n)
+(= n (smallest-divisor n)))
+
+(define (smallest-divisor n) (find-divisor n 2)) (define (find-divisor n test-divisor) 
+(cond ((> (square test-divisor) n) n)((divides? test-divisor n) test-divisor) (else (find-divisor n (+ test-divisor 1))))) 
+(define (divides? a b) (= (remainder b a) 0)) 
+(define (square x) (* x x))
+
+; When & Then
+(filtered-accumulate prime? + 0 identity 1 inc 10)
+
+
+
 
 
 
