@@ -247,6 +247,8 @@
 
 (print-interval "BASEIC" basic)
 
+; 2. 11 ~ 2.16に関してはのちの時間に行う。
+
 ; 2.11
 ; intevalのペア同士の掛け算を行い、Min, Maxを算出しそれからIntervalを作成する。
 ; interval a, bがあると仮定する。
@@ -268,4 +270,145 @@
 ; 1 - 2 (Min: low-upper(マイナスになるので）, :w
 ; 1 - 3 (
 
+; 2.17
+(define (last-pair items)
+  (let ((next (cdr items)))
+    (if (null? next)
+        (car items)
+        (last-pair next))))
 
+(last-pair (list 23 72 149 34))
+
+; 2.18
+#lang racket
+; 反復
+(define (reverse items)
+  (define (reverse-iter item result)
+    (let ((next ( cdr item ))
+          (make-list ( cons (car item) result )))
+      
+      (if (null? next)
+          make-list
+          (reverse-iter (cdr item) make-list))))
+  (reverse-iter items (list)))
+
+; 答えを見て少し改修
+(define (revers-r items)
+  (define (reverse-iter item result)
+      (if (null? item)
+          result
+          (reverse-iter (cdr item) (cons (car item) result ))))
+  
+  (reverse-iter items (list)))
+
+
+(reverse (list 23 72 149 34))
+
+; 2.19
+#lang racket
+(define (cc amount coin-values)
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (no-more? coin-values )) 0)
+        (else
+         (+ (cc amount
+                (except-first-denomination
+                 coin-values ))
+            (cc (- amount
+                   (first-denomination
+                    coin-values ))
+                coin-values )))))
+
+(define (first-denomination coin-value)
+  (car coin-value))
+
+(define (except-first-denomination coin-value)
+  (cdr coin-value))
+
+(define (no-more? coin-value)
+  (null? coin-value))
+
+(define us-coins (list 50 25 10 5 1))
+(define uk-coins (list 100 50 20 10 5 2 1 0.5))
+
+(cc 100 us-coins)
+
+; 全件検索が行われるので計算結果に影響を与えない。
+
+; 1.20
+; filter-function
+(define (filter func items)
+  (let (( nil '() ))
+    (if (null? items)
+        nil
+        (if (func (car items))
+            (cons (car items) (filter func (cdr items)))
+            (filter func (cdr items))))))
+
+(define (same-parity . x)
+  (if (even? (car x)) 
+      (filter even? x)
+      (filter odd? x)))
+
+(same-parity 1 2 3 4 5 6 7)
+(same-parity 2 3 4 5 6 7)
+
+; 2.21
+(define (square x) (* x x))
+
+(define (square-list-b items)
+  (if (null? items)
+      '()
+      (cons (square (car items))
+            (square-list-b (cdr items)))))
+
+(define (square-list-a items)
+  (map (lambda (x) (square x))
+       items))
+
+(square-list-a (list 1 2 3 4))
+(square-list-b (list 1 2 3 4))
+
+; 2.22
+#lang racket
+; pattern1 -> cons (square ...) answer)の部分が(square ....) とanswerが逆だから。
+; pattern2 -> cons number list でlistの伸長が可能だが、その逆は不可なため。
+
+; 改善案
+(define nil '())
+(define (square x) (* x x))
+
+(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (append answer
+                      ; 数値をlist化したものを作成する。
+                      (list (square (car things)))))))
+  (iter items nil))
+
+(square-list (list 1 2 3 4))
+
+; 2.23
+#lang racket
+(define (for-each proc items)
+  (let ((next-items (cdr items)))
+    (let ((do-next (lambda ()
+                   (proc (car items))
+                   (for-each proc next-items))))
+    
+      (if (null? next-items)
+          (proc (car items))
+          (do-next)))))
+
+(for-each (lambda (x)
+                  (newline)
+                  (display x))
+          (list 57 321 88))
+
+; 2.24
+; 1, ●  ->  2, ●  -> 3, 4
+; ↓         ↓        ↓  ↓
+; 1         2        3  4
+
+; 2.25
