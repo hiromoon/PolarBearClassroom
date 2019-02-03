@@ -527,3 +527,91 @@ ubsets s) (if (null? s)
 
 (define (reverse sequence)
   (fold-right (lambda (x y) (append (list y) x)) null sequence))
+
+;practice2-40
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(define (enumerate-interval start end)
+  (define (iter n acc)
+    (if (> n end)
+      acc
+      (iter (cons n acc))))
+  (reverse (iter start null)))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum?
+               (unique-pairs n))))
+
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (map (lambda (j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+             (enumerate-interval 1 n)))
+
+;practice2-41
+(define (flatmap proc seq)
+  (accumulate cons null (map proc seq)))
+
+(define (find-sum ans seqs)
+  (filter (lambda (ns) (= (accumulate + 0 ns) ans)) seqs))
+
+(define seq (list (list 1 2 3) (list 2 3 4)))
+(find-sum 6 seq)
+
+;practice2-42
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+      (list empty-board)
+      (filter
+        (lambda (positions) (safe? k positions))
+        (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position
+                     new-row k rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size))
+
+(define (adjoin-position new-row k rest-of-queens)
+    (cons new-row rest-of-queens))
+(define empty-board (list))
+(define (safe? k positions)
+  (define (row? row positions)
+    (cond ((null? positions) #t)
+          ((= row (car positions)) #f)
+          (else (row? row (cdr positions)))))
+  (define (upper? row positions)
+    (cond ((null? positions) #t)
+          ((= (- row 1) (car positions)) #f)
+          (else (upper? (- row 1) (cdr positions)))))
+  (define (lower? row positions)
+    (cond ((null? positions) #t)
+          ((= (+ row 1) (car positions)) #f)
+          (else (lower? (+ row 1) (cdr positions)))))
+  (let ((queen (car positions))
+        (rest (cdr positions)))
+    (every? 
+      (list
+        (row? queen rest)
+        (upper? queen rest)
+        (lower? queen rest)))))
+
+
+(define (every? l)
+  (cond ((null? l) #t)
+        ((not (car l)) #f)
+        (else (every? (cdr l)))))
+
+;practice2-43
+;枝刈りをせずにすべてのパターンを走査することになるから(?)
+;n^n*T

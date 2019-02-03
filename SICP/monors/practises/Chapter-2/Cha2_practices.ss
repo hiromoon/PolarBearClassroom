@@ -412,3 +412,303 @@
 ; 1         2        3  4
 
 ; 2.25
+#lang racket
+(define a '(1 3 ( 5 7) 9))
+(cadr (cadr (cdr a)))
+
+(define b '((7)))
+(car (car b))
+
+(define c '(1 (2 (3 (4 (5 (6 7)))))))
+(cadr (cadr (cadr (cadr (cadr (cadr c))))))
+
+; 2.26
+'(1 2 3 4 5 6 )
+'((1 2 3) 4 5 6)
+'((1 2 3) (4 5 6))
+
+; 2.27
+#lang racket
+(define (deep-reverse items)
+  (define (iter items result)
+    (if (null? items)
+        result
+        (iter (cdr items) (cons (if (pair? (car items))
+                                    (deep-reverse (car items))
+                                    (car items))
+                                result))))
+  
+  (iter items '()))
+
+(define x (list (list 1 2) (list 3 4)))
+(define y (list 1 2 (list 3 4)))
+(define z (list (list 1 2) 3 2))
+(define zero '())
+(define one '(1))
+
+(reverse x)
+(deep-reverse x)
+
+(reverse y)
+(deep-reverse y)
+
+(reverse z)
+(deep-reverse z)
+
+(reverse zero)
+(deep-reverse zero)
+
+(reverse one)
+(deep-reverse one)
+
+;2.28
+(define (fringe items)
+  (define (iter items result)
+    (if (null? items)
+        result
+        (iter (cdr items)
+              (append result (if (pair? (car items))
+                          (fringe (car items))
+                          (list (car items)))))))
+  (iter items '()))
+
+(define x (list (list 1 2) (list 3 4)))
+(define y (list 1 2 (list 3 4)))
+(define z (list (list 1 2) 3 2))
+(define zero '())
+(define one '(1))
+
+; 2.29
+; a
+(define (left-branch mobile)
+  (car mobile))
+
+(define (right-branch mobile)
+  (cadr mobile))
+
+(define (branch-length branch)
+  (car branch))
+
+(define (branch-structure branch)
+  (cadr branch))
+
+; test 
+; defined modile
+(define (make-mobile left right) (list left right))
+(define (make-branch length structure) (list length structure))
+
+(define branch-a (make-branch 10 10))
+(define branch-b (make-branch 20 20))
+(define mobile-children (make-mobile branch-b branch-a))
+
+(define branch-c (make-branch 10 30))
+(define branch-d (make-branch 20 mobile-children))
+
+(define mobile-parent (make-mobile branch-c branch-d))
+
+(left-branch mobile-parent)
+(right-branch mobile-parent)
+
+(branch-length branch-d)
+(branch-structure branch-d)
+
+; b
+(define (total-weight mobile)
+  (define (get-branch-weight branch)
+    (if (pair? (branch-structure branch))
+        (total-weight (branch-structure branch))
+        (branch-structure branch)))
+  
+  (if (not (pair? mobile))
+      mobile
+      (+ (get-branch-weight (right-branch mobile))
+         (get-branch-weight (left-branch mobile)))))
+
+; c
+; right = left
+; nullの場合; #tを返す。
+
+;    * (left, right)
+; |--------|
+; *        *
+;(10, 50) (2, 25)
+
+(define (balanced? mobile)
+  (define (togle branch)
+    (* (branch-length branch)
+       (total-weight (branch-structure branch))))
+        
+  (if (not(pair? mobile))
+      #t
+      (and (balanced? (branch-structure (right-branch mobile)))
+           (balanced? (branch-structure (left-branch mobile)))
+           ; 自身の評価
+           (= (togle (right-branch mobile))
+              (togle (left-branch mobile))))))
+
+; test
+(define (make-mobile left right) (list left right))
+(define (make-branch length structure) (list length structure))
+
+(define a (make-mobile (make-branch 2 3) (make-branch 2 3))) 
+(define d (make-mobile (make-branch 10 a) (make-branch 12 5)))
+ ;; Looks like: ((10 ((2 3) (2 3))) (12 5)) 
+
+(total-weight d) ;; 11
+(balanced? d) ;; #t 
+
+; d
+; 下記の通り変更れば、対応可能.
+(define (right-branch mobile)
+  (cdr mobile))
+
+(define (branch-structure branch)
+  (cdr branch))
+
+; 2.30
+(define (square n) (* n n))
+
+(define (square-tree tree)
+  (cond ((null? tree) '())
+        ((not (pair? tree)) (square tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+(define (square-tree2 tree)
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree)
+             (square-tree sub-tree)
+             (square sub-tree)))
+       tree))
+;test
+(define (square-tree 
+          (list 1
+                (list 2 (list 3 4) 5)
+                (list 6 7))))
+
+; 2.31
+#lang racket
+(define (square n) (* n n))
+
+(define (tree-map fanc tree)
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree)
+             (tree-map fanc sub-tree)
+             (fanc sub-tree)))
+       tree))
+
+(define (square-tree tree)
+  (tree-map square tree))
+
+;test
+(square-tree 
+          (list 1
+                (list 2 (list 3 4) 5)
+                (list 6 7)))
+
+
+
+; 2.32
+; (1, 2, 3)
+; (() (1) (2) (3) (1 2) (1 3)
+;１が選ばれた場合、選ばれなかった場合
+#lang racket
+(define (subsets s)
+  (if (null? s)
+      (list '())
+      (let ((rest (subsets (cdr s))))
+        (append rest ;carの数が選ばれなかった場合
+                (map (lambda (elems)
+                       (if (not (pair? elems))
+                           (list (car s))
+                           (append (list (car s)) elems)))
+                     rest))))) ; carの数が選ばれた場合。
+
+(subsets '(1 2 3))
+; '(() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3))
+
+; 2.33
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+
+; yはaccumulaterで処理が行われた結果が返ってくるので、それを時処理とどう組み合わせるかを考えればよい。
+
+(define (map p sequence)
+  (accumulate
+    (lambda (x y)
+      (cons (p x) y))
+    '()
+    sequence))
+; test
+(map (lambda (x)
+       (+ x 1))
+     (list 1 2 3))
+; -> '(2 4 7)
+
+(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+; test
+(append (list 1 2 3) (list 4 5 6))
+;-> '(1 2 3 4 5 6)
+
+(define (length sequence)
+  (accumulate
+   (lambda (x y)
+     (+ 1 y))
+   0
+   sequence))
+   
+  
+;test
+(length (list 1 2 3 4))
+
+; 2.34
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (horner-eval x coefficient-sequence)
+  (accumulate 
+    (lambda (this-coeff higher-terms)
+      (+ (* x higher-terms) this-coeff))
+    0
+    coefficient-sequence))
+
+(horner-eval 2 (list 1 3 0 5 0 1))
+; 79
+
+; 3.35
+#lang racket
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (enumerate-tree tree)
+  (cond (( null? tree) '())
+        ((not (pair? tree )) (list tree))
+        (else (append (enumerate-tree (car tree))
+                      (enumerate-tree (cdr tree ))))))
+
+(define (count-leaves t)
+  (accumulate 
+    +
+    0
+    (map (lambda (x) 1) (enumerate-tree t))))
+
+; test
+(count-leaves (list (list 1 2) (list 3 5 4)))
+; -> 5
+
+(count-leaves (list (list 1 2) (list 1 2) (list 3 5 4)))
+; -> 7
+
+; 3.36
