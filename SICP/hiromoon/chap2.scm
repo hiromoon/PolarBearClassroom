@@ -611,3 +611,7 @@ ubsets s) (if (null? s)
   (cond ((null? l) #t)
         ((not (car l)) #f)
         (else (every? (cdr l)))))
+
+;practice2-43
+;枝刈りをせずにすべてのパターンを走査することになるから(?)
+;n^n*T
