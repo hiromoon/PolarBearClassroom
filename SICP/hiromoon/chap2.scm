@@ -565,3 +565,49 @@ ubsets s) (if (null? s)
 
 (define seq (list (list 1 2 3) (list 2 3 4)))
 (find-sum 6 seq)
+
+;practice2-42
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+      (list empty-board)
+      (filter
+        (lambda (positions) (safe? k positions))
+        (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position
+                     new-row k rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size))
+
+(define (adjoin-position new-row k rest-of-queens)
+    (cons new-row rest-of-queens))
+(define empty-board (list))
+(define (safe? k positions)
+  (define (row? row positions)
+    (cond ((null? positions) #t)
+          ((= row (car positions)) #f)
+          (else (row? row (cdr positions)))))
+  (define (upper? row positions)
+    (cond ((null? positions) #t)
+          ((= (- row 1) (car positions)) #f)
+          (else (upper? (- row 1) (cdr positions)))))
+  (define (lower? row positions)
+    (cond ((null? positions) #t)
+          ((= (+ row 1) (car positions)) #f)
+          (else (lower? (+ row 1) (cdr positions)))))
+  (let ((queen (car positions))
+        (rest (cdr positions)))
+    (every? 
+      (list
+        (row? queen rest)
+        (upper? queen rest)
+        (lower? queen rest)))))
+
+
+(define (every? l)
+  (cond ((null? l) #t)
+        ((not (car l)) #f)
+        (else (every? (cdr l)))))
