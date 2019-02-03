@@ -712,3 +712,101 @@
 ; -> 7
 
 ; 3.36
+; 戦略
+;  ;seqの一番上を処理する。
+;seqの一番上を飛ばした要素を渡す。
+#lang racket
+(define (accumulate op inital sequence)
+  (if (null? sequence)
+      inital
+      (op (car sequence)
+          (accumulate op inital (cdr sequence)))))
+
+       
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+             '()
+             (cons (accumulate
+                      op
+                      init
+                      (map (lambda (line) (car line)) seqs))
+                    (accumulate-n
+                      op
+                      init
+                      (map (lambda (line) (cdr line)) seqs)))))
+
+(define x '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))
+
+(accumulate-n + 0 x)
+; -> '(22 26 30)
+
+; 3.37
+ (define (accumulate op initial sequence) 
+   (if (null? sequence) 
+       initial 
+       (op (car sequence) 
+           (accumulate op initial (cdr sequence))))) 
+  
+  
+ ;; accumulate-n 
+ (define (accumulate-n op init sequence) 
+   (define nil '()) 
+   (if (null? (car sequence)) 
+       nil 
+       (cons (accumulate op init (map car sequence)) 
+             (accumulate-n op init (map cdr sequence))))) 
+  
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+ ;; Test 
+ (dot-product (list 1 2 3) (list 4 5 6)) 
+
+(define (matrix-*-vector m v)
+  (map
+    (lambda (row)
+      (dot-product v row))
+    m))
+
+ (define matrix (list (list 1 2 3 4) (list 5 6 7 8) (list 9 10 11 12))) 
+
+;; Test
+(matrix-*-vector matrix (list 1 2 3 4))
+
+(define (transpose mat)
+  (accumulate-n 
+    cons
+    '()
+    mat))
+
+;; Test
+(transpose matrix)
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+              (map 
+                (lambda (row)
+                  (matrix-*-vector cols row))
+                m)))
+
+(define (matrix-*-matrix_2 m n)
+  (let ((cols (transpose n)))
+    (map (lambda (m-row)
+           (map (lambda (n-row)
+                  (dot-product m-row n-row))
+                cols))
+    m)))
+
+(define matrix_2 (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+
+;; Test
+(matrix-*-matrix matrix matrix_2)
+; -> ((70 80 90) (158 184 210) (246 288 330))
+
+(matrix-*-matrix_2 matrix matrix_2)
+; -> ((70 80 90) (158 184 210) (246 288 330))
+
+(dot-product (list 1 2 3 4) (list 1 4 7 10))
+; 70
+
+
