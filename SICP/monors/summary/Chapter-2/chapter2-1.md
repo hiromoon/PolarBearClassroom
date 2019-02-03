@@ -247,4 +247,29 @@ list内にlistを定義することで階層構造を構築することが可能
         (else (+ (count-leaves (car x))
                  (count-leaves (cdr x))))))
 ```
+#### 木に対するマップ
+木構造では、リスト内にリストを入れることが可能である。
+これに対して、map処理をするには本来は、ループを書くことで対応をする。
+しかし、mapと再帰を利用することで、多重ネストのListにも対応かのうである。
 
+引数：数値の係数、歯が数艇である木
+戻り値：同じ木
+```lisp
+(define (scala-tree tree factor)
+  (cond (null? tree) nil)
+        ((not (pari? tree)) (* tree factor))
+        (else (cons (csale-tree (car tree) factor)
+                    (scale-tree (cdr tree) factor))))
+
+(scale-tree (list 1 (list 2 (3 4) 5) (list 6 7)) 10 )
+```
+scale-treeの別の実装方法として、木を部分木の列とみなしてmapを使うというものがあります。
+
+```lisp
+(define (scale-tree tree factor)
+  (map (lambda (sub-tree)
+          (if (pair? sub-tree)
+              (sale-tree sub-tree factor)
+              (* sub-tree factor)))
+        tree))
+```
