@@ -807,6 +807,173 @@
 ; -> ((70 80 90) (158 184 210) (246 288 330))
 
 (dot-product (list 1 2 3 4) (list 1 4 7 10))
-; 70
+
+; 2.38
+#lang racket
+; 一番右まで行かないと評価が始まらない。
+(define (fold-right op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (fold-right op initial (cdr sequence)))))
+
+; 左から次々に評価が行われる。
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
 
 
+(fold-right / 1 (list 1 2 3))
+(fold-left / 1 (list 1 2 3))
+(fold-right list '() (list 1 2 3))
+(fold-left list '() (list 1 2 3))
+
+; opが満たさないといけない条件
+; 右と左のどちらから計算しても結果が同じになる演算子である必要がある。
+
+; 2.39
+#lang racket
+; 一番右まで行かないと評価が始まらない。
+(define (fold-right op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (fold-right op initial (cdr sequence)))))
+
+; 左から次々に評価が行われる。
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+(define (reverse_r sequence)
+  (fold-right
+    (lambda (x y)
+      (append y (list x)))
+    '()
+    sequence))
+
+(define (reverse_l sequence)
+  (fold-left
+   (lambda (x y)
+     (cons y x))
+     '()
+     sequence))
+
+(reverse_r (list 1 2 3 4))
+
+(reverse_l (list 1 2 3 4))
+
+; 3.40
+#lang racket
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1 ) high))))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap func sequence)
+  (accumulate append '() (map func sequence)))
+
+;; unique-pairs
+(define (unique-pairs n)
+  (flatmap 
+    (lambda (i)
+      (map (lambda (j)
+             (list i j))
+           (enumerate-interval 1 (- i 1))))
+    (enumerate-interval 1 n)))
+
+;; test
+(enumerate-interval 1 5)
+; '(1 2 3 4 5)
+(unique-pairs 5)
+; '((2 1) (3 1) (3 2) (4 1) (4 2) (4 3) (5 1) (5 2) (5 3) (5 4))
+
+
+;; helper functions
+(define (make-pair-sum sequence)
+  (list (car sequence) (cadr sequence) (+ (car sequence) (cadr sequence))))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (square n) (* n n))
+(define (divided? n a) (= (remainder a n) 0))
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divided? test-divisor n) test-divisor)
+        (else (find-divisor n (+ test-divisor 1)))))
+
+(define (prime? n)
+  (= (smallest-divisor n) n))
+
+;; rewrite 'prime-sum-pairs'
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum? (unique-pairs n))))
+
+(prime-sum-pairs 6)
+; '((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7) (6 1 7) (6 5 11))
+
+; 2.41
+#lang racket
+;; helper function
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap func sequence)
+  (accumulate append '() (map func sequence)))
+
+;; 列挙
+(define (enumerate-interval-ordered-trio n)
+  (flatmap (lambda (i)
+         (flatmap (lambda (j)
+                (map (lambda (k)
+                       (list i j k))
+                     (enumerate-interval 1 (- j 1))))
+              (enumerate-interval 1 (- i 1))))
+       (enumerate-interval 1 n)))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1) high))))
+
+;; filter
+(define (sum-is n)
+  (lambda (xs) (= n (sum xs))))
+
+(define (sum list)
+  (accumulate
+   +
+   0
+   list))
+
+;; build function
+(define (find-sum-is s max-num)
+  (filter (sum-is s)
+          (enumerate-interval-ordered-trio max-num)))
+
+; (enumerate-interval-ordered-trio 6)
+(find-sum-is 10 5)
+                
