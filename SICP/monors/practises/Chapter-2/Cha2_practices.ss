@@ -977,3 +977,82 @@
 ; (enumerate-interval-ordered-trio 6)
 (find-sum-is 10 5)
                 
+; 2.42
+#lang racket
+;;        2
+;;     3  ^  4
+;;       \|/
+;;   1 <- ● ->
+;;       /|\
+;;        V
+;; (a, b)の座標にk番目のQueenを配置する。
+;; 1. x = aの座標はすべて除外
+;; 2. y = bの座標はすべて除外
+;; 3. y - b = x - a <=> + y + a - ( b + x )  = 0 の座標はすべて除外
+;; 4. y - b = - ( x - a ) <=>  + x + y - ( b + a ) = 0の座標はすべて除外
+(define (safe? k positions)
+  (define (iter n pos)
+    (let ((A (car (car positions)))
+          (B (cadr (car positions))))
+      (if (null? pos)
+          #t
+          (let ((X (car (car pos)))
+                 (Y (cadr (car pos))))
+             
+             (cond ((= A X) #f)
+                   ((= B Y) #f)
+                   ((= 0 (- (+ Y A) (+ X B))) #f)
+                   ((= 0 (- (+ X Y) (+ A B))) #f)
+                   (else (iter (- n 1) (cdr pos))))))))
+  
+    (iter (- k 1) (cdr positions)))
+
+;; test
+; (safe? 4 (list (list 3 4) (list 2 1) (list 1 8)))
+
+(define empty-board '())
+
+;; new queen positon add to rest-of-queens
+;; rest-of-queens: (4 1) (3 4) (2 1) (1 7)
+;; k(next-queen): 5
+;; new-row: 1~8
+(define (adjoin-position new-row k rest-of-queens)
+  (cons (list k new-row) rest-of-queens))
+
+;;test
+; (define rest-of-queens '('(4 2) '(3 4) '(2 5) '(1 2)))
+; (adjoin-position 1 5 queens)
+
+
+;;;;;;;;;helper functions;;;;;;;;;;;
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap func sequence)
+  (accumulate append '() (map func sequence)))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1) high))))
+
+;;; anser ;;;
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+         (lambda (positions) (safe? k positions ))
+         (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position
+                    new-row k rest-of-queens ))
+                 (enumerate-interval 1 board-size )))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size ))
+
+(queens 10)
