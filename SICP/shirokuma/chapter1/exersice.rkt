@@ -624,29 +624,136 @@ TODO
 
 ; 1.33
 
+#lang racket
+
 (define (filtered-accumulate pred combiner null-value term a next b)
   (if (> a b)
     null-value
-    (if (pred)
-      (combiner (term a)
-                (filtered-accumulate pred combiner null-value term (next a) next b)))
-      null-value
-    )
-  )
-)
+    (if (pred a)
+      (combiner 
+        (term a)
+        (filtered-accumulate pred combiner null-value term (next a) next b))
+      (filtered-accumulate pred combiner null-value term (next a) next b))))
 
 ; Test
 ; Given
-define (prime? n)
-(= n (smallest-divisor n)))
-
+(define (prime? n) (= n (smallest-divisor n)))
 (define (smallest-divisor n) (find-divisor n 2)) (define (find-divisor n test-divisor) 
 (cond ((> (square test-divisor) n) n)((divides? test-divisor n) test-divisor) (else (find-divisor n (+ test-divisor 1))))) 
 (define (divides? a b) (= (remainder b a) 0)) 
 (define (square x) (* x x))
+(define (inc x) (+ x 1))
 
 ; When & Then
-(filtered-accumulate prime? + 0 identity 1 inc 10)
+(filtered-accumulate prime? + 0 identity 2 inc 10) ; 2+3+5+7 = 17
+
+; メモ
+; 指定する述語とcombinerが変わっただけなので、gcdはパス。
+
+; 1.34
+
+(define (f g) (g 2))
+
+(f f)
+(f 2)
+(2 2) となり、式の左の引数が手続きとして評価されない。
+よって、式は実行できない。
+
+
+; 1.35
+
+φ^2 =φ+1
+φ = 1 + (1/φ)
+
+#lang racket
+
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2)) tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+          next
+          (try next))))
+  (try first-guess))
+
+(fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.00)
+
+
+; 1.36
+
+#lang racket
+
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2)) tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (display guess)
+      (newline)
+      (if (close-enough? guess next)
+          next
+          (try next))))
+  (try first-guess))
+
+
+
+; 緩和法を使わない場合  
+(fixed-point (lambda (x) (/ (log 1000) (log x))) 2.00)
+2.0
+9.965784284662087
+3.004472209841214
+6.279195757507157
+3.759850702401539
+5.215843784925895
+4.182207192401397
+4.8277650983445906
+4.387593384662677
+4.671250085763899
+4.481403616895052
+4.6053657460929
+4.5230849678718865
+4.577114682047341
+4.541382480151454
+4.564903245230833
+4.549372679303342
+4.559606491913287
+4.552853875788271
+4.557305529748263
+4.554369064436181
+4.556305311532999
+4.555028263573554
+4.555870396702851
+4.555315001192079
+4.5556812635433275
+4.555439715736846
+4.555599009998291
+4.555493957531389
+4.555563237292884
+4.555517548417651
+4.555547679306398
+4.555527808516254
+4.555540912917957
+4.555532270803653
+
+;緩和法を使う場合
+(fixed-point (lambda (x) (average x (/ (log 1000) (log x)))) 2.00)
+2.0
+5.9828921423310435
+4.922168721308343
+4.628224318195455
+4.568346513136242
+4.5577305909237005
+4.555909809045131
+4.555599411610624
+4.5555465521473675
+4.555537551999825
+
+ステップ数が短くなった！
+
+; 1.37
 
 
 

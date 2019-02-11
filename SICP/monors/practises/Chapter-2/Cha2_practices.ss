@@ -712,3 +712,347 @@
 ; -> 7
 
 ; 3.36
+; 戦略
+;  ;seqの一番上を処理する。
+;seqの一番上を飛ばした要素を渡す。
+#lang racket
+(define (accumulate op inital sequence)
+  (if (null? sequence)
+      inital
+      (op (car sequence)
+          (accumulate op inital (cdr sequence)))))
+
+       
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+             '()
+             (cons (accumulate
+                      op
+                      init
+                      (map (lambda (line) (car line)) seqs))
+                    (accumulate-n
+                      op
+                      init
+                      (map (lambda (line) (cdr line)) seqs)))))
+
+(define x '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))
+
+(accumulate-n + 0 x)
+; -> '(22 26 30)
+
+; 3.37
+ (define (accumulate op initial sequence) 
+   (if (null? sequence) 
+       initial 
+       (op (car sequence) 
+           (accumulate op initial (cdr sequence))))) 
+  
+  
+ ;; accumulate-n 
+ (define (accumulate-n op init sequence) 
+   (define nil '()) 
+   (if (null? (car sequence)) 
+       nil 
+       (cons (accumulate op init (map car sequence)) 
+             (accumulate-n op init (map cdr sequence))))) 
+  
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+ ;; Test 
+ (dot-product (list 1 2 3) (list 4 5 6)) 
+
+(define (matrix-*-vector m v)
+  (map
+    (lambda (row)
+      (dot-product v row))
+    m))
+
+ (define matrix (list (list 1 2 3 4) (list 5 6 7 8) (list 9 10 11 12))) 
+
+;; Test
+(matrix-*-vector matrix (list 1 2 3 4))
+
+(define (transpose mat)
+  (accumulate-n 
+    cons
+    '()
+    mat))
+
+;; Test
+(transpose matrix)
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+              (map 
+                (lambda (row)
+                  (matrix-*-vector cols row))
+                m)))
+
+(define (matrix-*-matrix_2 m n)
+  (let ((cols (transpose n)))
+    (map (lambda (m-row)
+           (map (lambda (n-row)
+                  (dot-product m-row n-row))
+                cols))
+    m)))
+
+(define matrix_2 (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+
+;; Test
+(matrix-*-matrix matrix matrix_2)
+; -> ((70 80 90) (158 184 210) (246 288 330))
+
+(matrix-*-matrix_2 matrix matrix_2)
+; -> ((70 80 90) (158 184 210) (246 288 330))
+
+(dot-product (list 1 2 3 4) (list 1 4 7 10))
+
+; 2.38
+#lang racket
+; 一番右まで行かないと評価が始まらない。
+(define (fold-right op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (fold-right op initial (cdr sequence)))))
+
+; 左から次々に評価が行われる。
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+
+(fold-right / 1 (list 1 2 3))
+(fold-left / 1 (list 1 2 3))
+(fold-right list '() (list 1 2 3))
+(fold-left list '() (list 1 2 3))
+
+; opが満たさないといけない条件
+; 右と左のどちらから計算しても結果が同じになる演算子である必要がある。
+
+; 2.39
+#lang racket
+; 一番右まで行かないと評価が始まらない。
+(define (fold-right op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (fold-right op initial (cdr sequence)))))
+
+; 左から次々に評価が行われる。
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+(define (reverse_r sequence)
+  (fold-right
+    (lambda (x y)
+      (append y (list x)))
+    '()
+    sequence))
+
+(define (reverse_l sequence)
+  (fold-left
+   (lambda (x y)
+     (cons y x))
+     '()
+     sequence))
+
+(reverse_r (list 1 2 3 4))
+
+(reverse_l (list 1 2 3 4))
+
+; 3.40
+#lang racket
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1 ) high))))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap func sequence)
+  (accumulate append '() (map func sequence)))
+
+;; unique-pairs
+(define (unique-pairs n)
+  (flatmap 
+    (lambda (i)
+      (map (lambda (j)
+             (list i j))
+           (enumerate-interval 1 (- i 1))))
+    (enumerate-interval 1 n)))
+
+;; test
+(enumerate-interval 1 5)
+; '(1 2 3 4 5)
+(unique-pairs 5)
+; '((2 1) (3 1) (3 2) (4 1) (4 2) (4 3) (5 1) (5 2) (5 3) (5 4))
+
+
+;; helper functions
+(define (make-pair-sum sequence)
+  (list (car sequence) (cadr sequence) (+ (car sequence) (cadr sequence))))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (square n) (* n n))
+(define (divided? n a) (= (remainder a n) 0))
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divided? test-divisor n) test-divisor)
+        (else (find-divisor n (+ test-divisor 1)))))
+
+(define (prime? n)
+  (= (smallest-divisor n) n))
+
+;; rewrite 'prime-sum-pairs'
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum? (unique-pairs n))))
+
+(prime-sum-pairs 6)
+; '((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7) (6 1 7) (6 5 11))
+
+; 2.41
+#lang racket
+;; helper function
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap func sequence)
+  (accumulate append '() (map func sequence)))
+
+;; 列挙
+(define (enumerate-interval-ordered-trio n)
+  (flatmap (lambda (i)
+         (flatmap (lambda (j)
+                (map (lambda (k)
+                       (list i j k))
+                     (enumerate-interval 1 (- j 1))))
+              (enumerate-interval 1 (- i 1))))
+       (enumerate-interval 1 n)))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1) high))))
+
+;; filter
+(define (sum-is n)
+  (lambda (xs) (= n (sum xs))))
+
+(define (sum list)
+  (accumulate
+   +
+   0
+   list))
+
+;; build function
+(define (find-sum-is s max-num)
+  (filter (sum-is s)
+          (enumerate-interval-ordered-trio max-num)))
+
+; (enumerate-interval-ordered-trio 6)
+(find-sum-is 10 5)
+                
+; 2.42
+#lang racket
+;;        2
+;;     3  ^  4
+;;       \|/
+;;   1 <- ● ->
+;;       /|\
+;;        V
+;; (a, b)の座標にk番目のQueenを配置する。
+;; 1. x = aの座標はすべて除外
+;; 2. y = bの座標はすべて除外
+;; 3. y - b = x - a <=> + y + a - ( b + x )  = 0 の座標はすべて除外
+;; 4. y - b = - ( x - a ) <=>  + x + y - ( b + a ) = 0の座標はすべて除外
+(define (safe? k positions)
+  (define (iter n pos)
+    (let ((A (car (car positions)))
+          (B (cadr (car positions))))
+      (if (null? pos)
+          #t
+          (let ((X (car (car pos)))
+                 (Y (cadr (car pos))))
+             
+             (cond ((= A X) #f)
+                   ((= B Y) #f)
+                   ((= 0 (- (+ Y A) (+ X B))) #f)
+                   ((= 0 (- (+ X Y) (+ A B))) #f)
+                   (else (iter (- n 1) (cdr pos))))))))
+  
+    (iter (- k 1) (cdr positions)))
+
+;; test
+; (safe? 4 (list (list 3 4) (list 2 1) (list 1 8)))
+
+(define empty-board '())
+
+;; new queen positon add to rest-of-queens
+;; rest-of-queens: (4 1) (3 4) (2 1) (1 7)
+;; k(next-queen): 5
+;; new-row: 1~8
+(define (adjoin-position new-row k rest-of-queens)
+  (cons (list k new-row) rest-of-queens))
+
+;;test
+; (define rest-of-queens '('(4 2) '(3 4) '(2 5) '(1 2)))
+; (adjoin-position 1 5 queens)
+
+
+;;;;;;;;;helper functions;;;;;;;;;;;
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap func sequence)
+  (accumulate append '() (map func sequence)))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (+ low 1) high))))
+
+;;; anser ;;;
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+         (lambda (positions) (safe? k positions ))
+         (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position
+                    new-row k rest-of-queens ))
+                 (enumerate-interval 1 board-size )))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size ))
+
+(queens 10)
