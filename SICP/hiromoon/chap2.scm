@@ -615,3 +615,60 @@ ubsets s) (if (null? s)
 ;practice2-43
 ;枝刈りをせずにすべてのパターンを走査することになるから(?)
 ;n^n*T
+
+;practice2-44
+(define (up-split painter n)
+  (if (= n 0)
+    painter
+    (let ((smaller (up-split painter (- n 1))))
+      (below painter (beside smaller smaller)))))
+
+;practice2-45
+(define (split f g)
+  (define (do-split painter n)
+    (if (= n 0) 
+      painter
+      (let ((smaller (do-split painter (- n 1))))
+        (f painter (g smaller smaller)))))
+  do-split)
+
+;practice2-46
+(define make-vect cons)
+(define xcor-vect car)
+(define ycor-vect cdr)
+
+(define (add-vect v1 v2)
+  (make-vect
+    (+ (xcor-vect v1) (xcor-vect v2))
+    (+ (ycor-vect v1) (ycor-vect v2))))
+
+(define (sub-vect v1 v2)
+  (make-vect
+    (- (xcor-vect v1) (xcor-vect v2))
+    (- (ycor-vect v1) (ycor-vect v2))))
+
+(define (scale-vect v s) 
+  (make-vect (* s (xcor-vect v)) (* s (ycor-vect v))))
+
+;practice2-47
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+
+(define origin-frame car)
+(define edge1-frame cadr)
+(define edge2-frame caddr)
+
+(define (make-frame origin edge1 edge2)
+  (cons origin (cons edge1 edge2)))
+
+(define origin-frame car)
+(define edge1-frame cadr)
+(define edge2-frame cddr)
+
+;practice2-48
+(define make-segment cons)
+(define start-segment car)
+(define end-segment cdr)
+
+;practice2-49
+
