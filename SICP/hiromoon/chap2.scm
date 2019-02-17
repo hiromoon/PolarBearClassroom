@@ -671,4 +671,74 @@ ubsets s) (if (null? s)
 (define end-segment cdr)
 
 ;practice2-49
-
+(define (segments->painter segment-list) 
+  (lambda (frame)
+    (for-each
+      (lambda (segment)
+        (draw-line
+          ((frame-coord-map frame)
+           (start-segment segment))
+          ((frame-coord-map frame)
+           (end-segment segment))))
+      segment-list)))
+;a. 指定された枠の輪郭を描くペインタ
+(define (round-painter frame)
+  (segments->painter
+    (list
+      (make-segment
+        (origin-frame frame)
+        (edge1-frame frame))
+      (make-segment
+        (origin-frame frame)
+        (edge2-frame frame))
+      (make-segment
+        (edge1-frame frame)
+        (add-vect
+          (edge1-frame frame)
+          (edge2-frame frame)))
+      (make-segment
+        (edge2-frame frame)
+        (add-vect
+          (edge1-frame frame)
+          (edge2-frame frame))))))
+;b. 枠の対角線同士をつないで"X"を描くペインタ
+(define (diagonal-painter frame)
+  (segments->painter
+    (list
+      (make-segment
+        (origin-frame frame)
+        (add-vect
+          (edge1-frame frame)
+          (edge2-frame frame)))
+      (make-segment
+        (edge1-frame frame)
+        (edge2-frame frame)))))
+;c. 枠の辺の中点をつないでひし形を描くペインタ
+(define (diamond-painter frame)
+  (let ((point1
+          (scale-vect 
+            (sub-vect
+              (origin-frame frame)
+              (edge1-frame frame)) 
+            0.5))
+        (point2
+          (scale-vect 
+            (sub-vect
+              (origin-frame frame)
+              (edge2-frame frame)) 
+            0.5))
+        (point3
+          (add-vect
+            (edge2-frame frame)
+            (scale-vect (edge1-frame frame) 0.5)))
+        (point4
+            (edge1-frame frame)
+            (scale-vect (edge2-frame frame) 0.5)))
+    (segments-painter
+      (list
+        (make-segment point1 point2)
+        (make-segment point2 point3)
+        (make-segment point3 point4)
+        (make-segment point4 point1)))))
+;d. waveペインタ
+;めんどいからすきっぷ
