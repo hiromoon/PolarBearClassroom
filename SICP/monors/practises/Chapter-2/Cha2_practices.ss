@@ -1049,10 +1049,169 @@
          (flatmap
           (lambda (rest-of-queens)
             (map (lambda (new-row)
-                   (adjoin-position
-                    new-row k rest-of-queens ))
+                   (adjoin-position new-row k rest-of-queens ))
                  (enumerate-interval 1 board-size )))
           (queen-cols (- k 1))))))
   (queen-cols board-size ))
 
 (queens 10)
+
+; 練習問題 2.43
+(flatmap
+  (lambda (new-row)
+    (map (lambda (rest-of_queens)
+           (adfoin-positon new-row k rest-of-queens))
+         (queen-cols (- k 1))))
+    (enumerate-interval 1 board-size))
+
+; 逆にするとなぜプログラムが遅くなるのか?
+; -> queen-colsが何回再帰的に呼ばれるかで処理じかんに差異が出てくる。
+; Louisの記述したプログラムの場合、lambda内にqueen-colsがあり、lambdaが実行されるごとに呼び出しが行われる。しかし、2.42の例はflatmapの呼び出しで呼ばれるの呼び出し回数が少なくなる。
+
+; 処理時間に関して
+; ８クイーンパズルを解く時間をTとした場合、逆にした場合は8T
+         
+; 2.44
+#lang sicp
+(#%require sicp-pict)
+
+(define (corner-split painter n)
+  (if (= n 0)
+      painter
+      (let ((up (up-split painter (- n 1)))
+            (right (right-split painter (- n 1))))
+        (let (( top-left (beside up up))
+              (bottom-right (below right right ))
+              (corner (corner-split painter (- n 1))))
+          (beside (below painter top-left)
+                  (below bottom-right corner ))))))
+
+(define (right-split painter n)
+  (if (= n 0)
+
+      painter
+      (let (( smaller (right-split painter (- n 1))))
+        (beside painter (below smaller smaller )))))
+
+(define (up-split painter n)
+  (if (= n 0)
+      painter
+      (let ((smaller (up-split painter (- n 1))))
+        (below painter (beside smaller smaller)))))
+
+(paint (corner-split einstein 5))
+
+; 2.45
+#lang sicp
+(#%require sicp-pict)
+
+(define right-split (split beside below))
+(define up-split (split below beside))
+
+(define (split first second)
+  (define (iter painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (iter painter (- n 1))))
+          (first painter (second smaller smaller))))))
+
+(paint (right-split einstein))
+(paint (up-split einstein))
+
+; 2.46
+#lang sicp
+(#%require sicp-pict)
+
+;; 自分の回答
+(define (split first second)
+  (define (iter painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (iter painter (- n 1))))
+          (first painter (second smaller smaller)))))
+
+  (lambda (painter n) (iter painter n)))
+
+;; 下記の様に記述する事も可能。
+(define (split_2 origin-placer split-placer)
+  (lambda (painter n)
+    (if (= n 0)
+        painter
+        (let (( smaller ((split_2 origin-placer split-placer) painter (- n 1)))) ;; split_2はlambdaのラッパーなのでこれでもOK
+          (origin-placer painter (split-placer smaller smaller))))))
+
+(define right-split (split beside below))
+(define up-split (split below beside))
+
+(paint (right-split einstein 5))
+(paint (up-split einstein 5))
+
+; 2.46
+(define (make-vect x y) (cons x y))
+(define (xcor-vect vect) (car vect))
+(define (ycor-vect vect) (cdr vect))
+
+(define (add-vect v1 v2) 
+  (make-vect (+ (xcor-vect v1) (xcor-vect v2)) (+ (ycor-vect v1) (ycor-vect v2))))
+
+(define (add-vect v1 v2) 
+  (make-vect (- (xcor-vect v1) (xcor-vect v2)) (- (ycor-vect v1) (ycor-vect v2))))
+
+(define (scale-vect s vect)
+  (make-vect (* s (xcor-vect vect)) (* s (ycor-vect))))
+
+; 2.47
+(define (origin-frame frame) (car frame))
+(define (edge1-frame frame) (cadr frame))
+(define (edge2-frame frame) (caddr frame))
+
+; 2.48, 49
+; painterの使い方
+#lang racket
+(require sicp-pict)
+
+;; segment
+(define seg-list (list (make-segment (make-vect 0 1) (make-vect 1 0))))
+
+;; for making-frame
+(define origin (make-vect 0 0))
+(define edge1 (make-vect 0 1))
+(define edge2 (make-vect 1 0))
+(define frame (make-frame origin edge1 edge2))
+
+(paint (segments->painter seg-list))
+
+;; answer
+#lang racket
+(require sicp-pict)
+
+;; 2.49
+;; a
+(define seg-list_a
+  (list (make-segment (make-vect 0 0) (make-vect 1 0))
+        (make-segment (make-vect 1 0) (make-vect 1 1))
+        (make-segment (make-vect 1 1) (make-vect 0 1))
+        (make-segment (make-vect 0 1) (make-vect 0 0))
+        ))
+
+(paint (segments->painter seg-list_a))
+
+;; b
+(define seg-list_b
+  (list (make-segment (make-vect 0 0) (make-vect 1 1))
+        (make-segment (make-vect 1 0) (make-vect 0 1))
+        ))
+
+(paint (segments->painter seg-list_b))
+
+;; c
+(define seg-list_c
+  (list (make-segment (make-vect 0 0.5) (make-vect 0.5 0))
+        (make-segment (make-vect 0.5 0) (make-vect 1. 0.5))
+        (make-segment (make-vect 1 0.5) (make-vect 0.5 1))
+        (make-segment (make-vect 0.5 1) (make-vect 0 0.5))
+        ))
+
+(paint (segments->painter seg-list_c))
+
+;; waveの記述はきついのでパス。
