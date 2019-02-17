@@ -816,3 +816,62 @@ ubsets s) (if (null? s)
 
 ;practice2-55
 ;http://community.schemewiki.org/?sicp-ex-2.55
+
+;practice2-56
+(define variable? symbol?) ;e は変数か?
+(define (=number? exp num) (and (number? exp) (= exp num)))
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2))) ;v1 と v2 は同じ変数か?
+
+(define (sum? e)
+  (and (pair? e) (eq? (car e) '+)));e は和か?
+(define addend cadr) ;和 e の加数
+(define augend caddr) ;和 e の被加数
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2))
+         (+ a1 a2))
+        (else (list '+ a1 a2)))) ;a1 と a2 の和を構築する
+
+(define (product? e) ;e は積か?
+  (and (pair? e) (eq? (car e) '*)));e は和か?
+(define multiplier cadr) ;積 e の乗数
+(define multiplicand caddr) ;積 e の被乗数
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list '* m1 m2)))) ;m1 と m2 の積を構築する
+
+(define (exponentiation? e)
+  (and (pair? e) (eq? (car e) '**)))
+(define base cadr)
+(define exponent caddr)
+(define (make-exponentiation base exponent)
+  (cond ((=number? exponent 0) 1)
+        ((=number? expoennt 1) base)
+        ((and (number? base) (number? exponent)) (exponentiation base exponent))
+        (else (list '** base exponent))))
+
+(define (exponentiation base exponent)
+  (define (iter b e acc)
+    (if (= e 0)
+      acc
+      (iter b (- e 1) (* acc b))))
+  (iter b e 1))
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ((sum? exp) (make-sum (deriv (addend exp) var)
+                              (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+           (make-product (multiplier exp)
+                         (deriv (multiplicand exp) var))
+           (make-product (deriv (multiplier exp) var)
+                         (multiplicand exp))))
+        (else
+          (error "unknown expression type: DERIV" exp))))
