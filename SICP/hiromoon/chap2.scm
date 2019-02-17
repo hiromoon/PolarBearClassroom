@@ -786,3 +786,33 @@ ubsets s) (if (null? s)
     (beside
       (rotate270 painter1)
       (rotate270 painter2))))
+
+;practice2-52
+;すきっぷ
+
+;practice2-53
+; '(a b c)
+; '((george))
+; '((y1 y2))
+; '(y1 y2)
+; #f
+; #f
+; '(red shoes blue socks)
+
+;practice2-54
+(define (equal? l1 l2)
+  (cond
+    ((and (null? l1) (null? l2)) #t)
+        ((or (null? l1) (null? l2)) #f)
+        ((and (pair? (car l1)) (pair? (car l2)))
+           (if (equal? (car l1) (car l2))
+             (equal? (cdr l1) (cdr l2))
+             #f))
+        ((or (pair? (car l1)) (pair? (car l2))) #f)
+        (else (equal? (cdr l1) (cdr l2)))))
+
+(equal? '(this is a list) '(this is a list))
+(equal? '(this is a list) '(this (is a) list))
+
+;practice2-55
+;http://community.schemewiki.org/?sicp-ex-2.55
