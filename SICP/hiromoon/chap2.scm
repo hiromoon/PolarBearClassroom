@@ -1002,4 +1002,58 @@ ubsets s) (if (null? s)
 ;adjoinだけは早いので、要素の書き込みが多い場合に向いている(?)
 
 
+;practice2-61
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((= x (car set)) #t)
+        ((< x (car set)) #f)
+        (else (element-of-set? x (cdr set)))))
 
+(define (addjoin-set x set)
+  (cond ((null? set) (cons x))
+        ((= x (car set)) set)
+        ((< x (car set) (cons x set)))
+        (else (cons (car set) (addjoin-set x (cdr set))))))
+
+;practice2-62
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        ((= (car set2) (car set1))
+         (cons (car set1) (union-set (cdr set1) (cdr set2))))
+        ((< (car set1) (car set2))
+         (cons (car set1) (union-set (cdr set1) set2)))
+        (else (cons (car set2) (union-set set1 (cdr set2))))))
+
+;図2-16
+'(7 '(3 '(1) '(5)) '(9 '() '(11)))
+'(3 '(1) '(7 '(5) '(9 '() '(11))))
+'(5 '(3 '(1) '()) '(9 '(7) '(11)))
+
+(define entry car)
+(define left-branch cadr)
+(define right-branch caddr)
+(define (make-tree entry left right)
+  (list entry left right))
+
+(define (tree->list-1 tree)
+  (if (null? tree)
+    '()
+    (append (tree->list-1 (left-branch tree))
+            (cons (entry tree)
+                  (tree->list-1
+                    (right-branch tree))))))
+
+(define (tree->list-2 tree)
+  (define (copy-to-list tree result-list)
+    (if null? tree)
+    result-list
+    (copy-to-list (left-branch tree)
+                  (cons (entry tree)
+                        (copy-to-list
+                          (right-branch tree)
+                          result-list))))
+  (copy-to-list tree '()))
+
+;a
+;b
