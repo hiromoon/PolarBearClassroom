@@ -615,3 +615,445 @@ ubsets s) (if (null? s)
 ;practice2-43
 ;枝刈りをせずにすべてのパターンを走査することになるから(?)
 ;n^n*T
+
+;practice2-44
+(define (up-split painter n)
+  (if (= n 0)
+    painter
+    (let ((smaller (up-split painter (- n 1))))
+      (below painter (beside smaller smaller)))))
+
+;practice2-45
+(define (split f g)
+  (define (do-split painter n)
+    (if (= n 0) 
+      painter
+      (let ((smaller (do-split painter (- n 1))))
+        (f painter (g smaller smaller)))))
+  do-split)
+
+;practice2-46
+(define make-vect cons)
+(define xcor-vect car)
+(define ycor-vect cdr)
+
+(define (add-vect v1 v2)
+  (make-vect
+    (+ (xcor-vect v1) (xcor-vect v2))
+    (+ (ycor-vect v1) (ycor-vect v2))))
+
+(define (sub-vect v1 v2)
+  (make-vect
+    (- (xcor-vect v1) (xcor-vect v2))
+    (- (ycor-vect v1) (ycor-vect v2))))
+
+(define (scale-vect v s) 
+  (make-vect (* s (xcor-vect v)) (* s (ycor-vect v))))
+
+;practice2-47
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+
+(define origin-frame car)
+(define edge1-frame cadr)
+(define edge2-frame caddr)
+
+(define (make-frame origin edge1 edge2)
+  (cons origin (cons edge1 edge2)))
+
+(define origin-frame car)
+(define edge1-frame cadr)
+(define edge2-frame cddr)
+
+;practice2-48
+(define make-segment cons)
+(define start-segment car)
+(define end-segment cdr)
+
+;practice2-49
+(define (segments->painter segment-list) 
+  (lambda (frame)
+    (for-each
+      (lambda (segment)
+        (draw-line
+          ((frame-coord-map frame)
+           (start-segment segment))
+          ((frame-coord-map frame)
+           (end-segment segment))))
+      segment-list)))
+;a. 指定された枠の輪郭を描くペインタ
+(define (round-painter frame)
+  (segments->painter
+    (list
+      (make-segment
+        (origin-frame frame)
+        (edge1-frame frame))
+      (make-segment
+        (origin-frame frame)
+        (edge2-frame frame))
+      (make-segment
+        (edge1-frame frame)
+        (add-vect
+          (edge1-frame frame)
+          (edge2-frame frame)))
+      (make-segment
+        (edge2-frame frame)
+        (add-vect
+          (edge1-frame frame)
+          (edge2-frame frame))))))
+;b. 枠の対角線同士をつないで"X"を描くペインタ
+(define (diagonal-painter frame)
+  (segments->painter
+    (list
+      (make-segment
+        (origin-frame frame)
+        (add-vect
+          (edge1-frame frame)
+          (edge2-frame frame)))
+      (make-segment
+        (edge1-frame frame)
+        (edge2-frame frame)))))
+;c. 枠の辺の中点をつないでひし形を描くペインタ
+(define (diamond-painter frame)
+  (let ((point1
+          (scale-vect 
+            (sub-vect
+              (origin-frame frame)
+              (edge1-frame frame)) 
+            0.5))
+        (point2
+          (scale-vect 
+            (sub-vect
+              (origin-frame frame)
+              (edge2-frame frame)) 
+            0.5))
+        (point3
+          (add-vect
+            (edge2-frame frame)
+            (scale-vect (edge1-frame frame) 0.5)))
+        (point4
+            (edge1-frame frame)
+            (scale-vect (edge2-frame frame) 0.5)))
+    (segments-painter
+      (list
+        (make-segment point1 point2)
+        (make-segment point2 point3)
+        (make-segment point3 point4)
+        (make-segment point4 point1)))))
+;d. waveペインタ
+;めんどいからすきっぷ
+
+;practice2-50
+(define (flip-horiz painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 1.0)
+                     (make-vect 1.0 0.0)))
+
+(define (rotate270 painter)
+  (transform-painter painter
+                     (make-vect 0.0 1.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+;practice2-51
+(define (below painter1 painter2)
+  (let ((split-point (make-vect 0.0 0.5)))
+    (let ((paint-top 
+            (transform-painter
+              painter2
+              split-point
+              (make-vect 1.0 0.5)
+              (make-vect 1.0 1.0))) 
+          (paint-bottom
+            (transform-painter
+              painter1
+              (make-vect 0.0 0.0)
+              (make-vect 1.0 0.0)
+              split-point)))
+      (lambda (frame)
+        (paint-top frame)
+        (paint-bottom frame)))))
+
+(define (below painter1 painter2) 
+  (rotate90
+    (beside
+      (rotate270 painter1)
+      (rotate270 painter2))))
+
+;practice2-52
+;すきっぷ
+
+;practice2-53
+; '(a b c)
+; '((george))
+; '((y1 y2))
+; '(y1 y2)
+; #f
+; #f
+; '(red shoes blue socks)
+
+;practice2-54
+(define (equal? l1 l2)
+  (cond
+    ((and (null? l1) (null? l2)) #t)
+        ((or (null? l1) (null? l2)) #f)
+        ((and (pair? (car l1)) (pair? (car l2)))
+           (if (equal? (car l1) (car l2))
+             (equal? (cdr l1) (cdr l2))
+             #f))
+        ((or (pair? (car l1)) (pair? (car l2))) #f)
+        (else (equal? (cdr l1) (cdr l2)))))
+
+(equal? '(this is a list) '(this is a list))
+(equal? '(this is a list) '(this (is a) list))
+
+;practice2-55
+;http://community.schemewiki.org/?sicp-ex-2.55
+
+;practice2-56
+(define variable? symbol?) ;e は変数か?
+(define (=number? exp num) (and (number? exp) (= exp num)))
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2))) ;v1 と v2 は同じ変数か?
+
+(define (sum? e)
+  (and (pair? e) (eq? (car e) '+)));e は和か?
+(define addend cadr) ;和 e の加数
+(define augend caddr) ;和 e の被加数
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2))
+         (+ a1 a2))
+        (else (list '+ a1 a2)))) ;a1 と a2 の和を構築する
+
+(define (product? e) ;e は積か?
+  (and (pair? e) (eq? (car e) '*)));e は和か?
+(define multiplier cadr) ;積 e の乗数
+(define multiplicand caddr) ;積 e の被乗数
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list '* m1 m2)))) ;m1 と m2 の積を構築する
+
+(define (exponentiation? e)
+  (and (pair? e) (eq? (car e) '**)))
+
+(define base cadr)
+
+(define exponent caddr)
+
+(define (make-exponentiation base exponent)
+  (cond ((=number? base 1) 1)
+        ((=number? exponent 1) base)
+        ((=number? exponent 0) 1)
+        ((and (number? base) (number? exponent)) (exponentiation base exponent))
+        (else (list '** base exponent))))
+
+(define (exponentiation base exponent)
+  (define (iter b e acc)
+    (if (= e 0)
+      acc
+      (iter b (- e 1) (* acc b))))
+  (iter b e 1))
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ((sum? exp) (make-sum (deriv (addend exp) var)
+                              (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+           (make-product (multiplier exp)
+                         (deriv (multiplicand exp) var))
+           (make-product (deriv (multiplier exp) var)
+                         (multiplicand exp))))
+        ((exponentiation? exp)  
+                          (make-product  
+                            (make-product  
+                              (exponent exp) 
+                              (make-exponentiation (base exp) 
+                              (make-sum (exponent exp) -1)))                                                                                                 
+                            (deriv (base exp) var)))
+        (else
+          (error "unknown expression type: DERIV" exp))))
+
+;practice2-57
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (sum? e)
+  (and (pair? e) (eq? (car e) '+)));e は和か?
+(define addend cadr) ;和 e の加数
+
+(define (augend s) ;和 e の被加数
+  (accumulate make-sum '0 (cddr s)))
+
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2))
+         (+ a1 a2))
+        (else (list '+ a1 a2)))) ;a1 と a2 の和を構築する
+
+(define (product? e) ;e は積か?
+  (and (pair? e) (eq? (car e) '*)));e は和か?
+(define multiplier cadr) ;積 e の乗数
+(define (multiplicand p)
+  (accumulate make-product '1 (cddr p))) ;積 e の被乗数
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list '* m1 m2)))) ;m1 と m2 の積を構築する
+
+;practice2-58
+;a
+(define (sum? e)
+  (and (pair? e) (eq? (cadr e) '+)))
+
+(define addend car)
+(define augend caddr)
+
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        (else '(a1 + a2))))
+
+(define (product? e)
+  (and (pair? e) (eq? (cadr e) '*)))
+
+(define multiplier car)
+(define multiplicand caddr)
+
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        (else '(m1 * m2)))) ;m1 と m2 の積を構築する
+
+;b
+;パス
+
+;practice2-59
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+(define (addjoin-set x set)
+  (if (element-of-set? x set)
+    set
+    (cons x set)))
+
+(define (union-set set1 set2)
+  (accumulate addjoin-set set2 set1))
+
+;practice2-60
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) #t)
+        (else (element-of-set? x (cdr set))))) ;変わらない
+
+(define (adjoin-set x set)
+  (cons x set)) ;なにも考えずに追加するだけなのでO(1)
+
+(define (union-set set1 set2)
+  (append set2 set1)) ;なにも考えずに追加するだけなのでO(1)
+
+(define (uniq set)
+  (accumulate
+    (lambda (x acc)
+      (if (element-of-set? x acc)
+        acc
+        (cons x acc))
+    '()
+    set)))
+
+(define (intersection-set set1 set2)
+  (let ((uniq-set1 (uniq set1))
+        (uniq-set2 (uniq set2)))
+    (accumulate (lambda (x acc)
+                  (if (element-of-set? x uniq-set2)
+                    (cons x acc)
+                    acc))
+                '()
+                uniq-set1)))
+
+;adjoinだけは早いので、要素の書き込みが多い場合に向いている(?)
+
+
+;practice2-61
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((= x (car set)) #t)
+        ((< x (car set)) #f)
+        (else (element-of-set? x (cdr set)))))
+
+(define (addjoin-set x set)
+  (cond ((null? set) (cons x))
+        ((= x (car set)) set)
+        ((< x (car set) (cons x set)))
+        (else (cons (car set) (addjoin-set x (cdr set))))))
+
+;practice2-62
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        ((= (car set2) (car set1))
+         (cons (car set1) (union-set (cdr set1) (cdr set2))))
+        ((< (car set1) (car set2))
+         (cons (car set1) (union-set (cdr set1) set2)))
+        (else (cons (car set2) (union-set set1 (cdr set2))))))
+
+;図2-16
+'(7 '(3 '(1) '(5)) '(9 '() '(11)))
+'(3 '(1) '(7 '(5) '(9 '() '(11))))
+'(5 '(3 '(1) '()) '(9 '(7) '(11)))
+
+(define entry car)
+(define left-branch cadr)
+(define right-branch caddr)
+(define (make-tree entry left right)
+  (list entry left right))
+
+(define (tree->list-1 tree)
+  (if (null? tree)
+    '()
+    (append (tree->list-1 (left-branch tree))
+            (cons (entry tree)
+                  (tree->list-1
+                    (right-branch tree))))))
+
+(define (tree->list-2 tree)
+  (define (copy-to-list tree result-list)
+    (if null? tree)
+    result-list
+    (copy-to-list (left-branch tree)
+                  (cons (entry tree)
+                        (copy-to-list
+                          (right-branch tree)
+                          result-list))))
+  (copy-to-list tree '()))
+
+;a
+;b
