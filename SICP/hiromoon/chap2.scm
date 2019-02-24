@@ -847,11 +847,15 @@ ubsets s) (if (null? s)
 
 (define (exponentiation? e)
   (and (pair? e) (eq? (car e) '**)))
+
 (define base cadr)
+
 (define exponent caddr)
+
 (define (make-exponentiation base exponent)
-  (cond ((=number? exponent 0) 1)
-        ((=number? expoennt 1) base)
+  (cond ((=number? base 1) 1)
+        ((=number? exponent 1) base)
+        ((=number? exponent 0) 1)
         ((and (number? base) (number? exponent)) (exponentiation base exponent))
         (else (list '** base exponent))))
 
@@ -873,5 +877,129 @@ ubsets s) (if (null? s)
                          (deriv (multiplicand exp) var))
            (make-product (deriv (multiplier exp) var)
                          (multiplicand exp))))
+        ((exponentiation? exp)  
+                          (make-product  
+                            (make-product  
+                              (exponent exp) 
+                              (make-exponentiation (base exp) 
+                              (make-sum (exponent exp) -1)))                                                                                                 
+                            (deriv (base exp) var)))
         (else
           (error "unknown expression type: DERIV" exp))))
+
+;practice2-57
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (sum? e)
+  (and (pair? e) (eq? (car e) '+)));e は和か?
+(define addend cadr) ;和 e の加数
+
+(define (augend s) ;和 e の被加数
+  (accumulate make-sum '0 (cddr s)))
+
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2))
+         (+ a1 a2))
+        (else (list '+ a1 a2)))) ;a1 と a2 の和を構築する
+
+(define (product? e) ;e は積か?
+  (and (pair? e) (eq? (car e) '*)));e は和か?
+(define multiplier cadr) ;積 e の乗数
+(define (multiplicand p)
+  (accumulate make-product '1 (cddr p))) ;積 e の被乗数
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list '* m1 m2)))) ;m1 と m2 の積を構築する
+
+;practice2-58
+;a
+(define (sum? e)
+  (and (pair? e) (eq? (cadr e) '+)))
+
+(define addend car)
+(define augend caddr)
+
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        (else '(a1 + a2))))
+
+(define (product? e)
+  (and (pair? e) (eq? (cadr e) '*)))
+
+(define multiplier car)
+(define multiplicand caddr)
+
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        (else '(m1 * m2)))) ;m1 と m2 の積を構築する
+
+;b
+;パス
+
+;practice2-59
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+(define (addjoin-set x set)
+  (if (element-of-set? x set)
+    set
+    (cons x set)))
+
+(define (union-set set1 set2)
+  (accumulate addjoin-set set2 set1))
+
+;practice2-60
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) #t)
+        (else (element-of-set? x (cdr set))))) ;変わらない
+
+(define (adjoin-set x set)
+  (cons x set)) ;なにも考えずに追加するだけなのでO(1)
+
+(define (union-set set1 set2)
+  (append set2 set1)) ;なにも考えずに追加するだけなのでO(1)
+
+(define (uniq set)
+  (accumulate
+    (lambda (x acc)
+      (if (element-of-set? x acc)
+        acc
+        (cons x acc))
+    '()
+    set)))
+
+(define (intersection-set set1 set2)
+  (let ((uniq-set1 (uniq set1))
+        (uniq-set2 (uniq set2)))
+    (accumulate (lambda (x acc)
+                  (if (element-of-set? x uniq-set2)
+                    (cons x acc)
+                    acc))
+                '()
+                uniq-set1)))
+
+;adjoinだけは早いので、要素の書き込みが多い場合に向いている(?)
+
+
+
