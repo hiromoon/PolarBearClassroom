@@ -755,11 +755,97 @@ TODO
 
 ; 1.37
 
+#lang racket
+
+; 反復
+(define (cont-frac-new-itr n d k)
+  (define (next i result)
+  (if (= i 0)
+      result
+      (next (- i 1) (/ (n i) (+ (d i) result)))))
+  (next k 0))
+; 再帰
+; nからたどってるから、教科書の連分散の形にならないと思うのだが。。
+; bugかも。
+(define (cont-frac-new n d k)
+  (if (= k 1)
+      1
+      (/ (n k) ( + (d k) (cont-frac-new n d (- k 1))))))
 
 
+; test（以下の結果は全て等しい）
+(cont-frac-new-itr (lambda (i) 1.0) (lambda (i) 1.0) 1)
+(cont-frac-new-itr (lambda (i) 1.0) (lambda (i) 1.0) 2)
+(cont-frac-new-itr (lambda (i) 1.0) (lambda (i) 1.0) 3)
+(cont-frac-new-itr (lambda (i) 1.0) (lambda (i) 1.0) 4)
+(cont-frac-new-itr (lambda (i) 1.0) (lambda (i) 1.0) 5)
 
+(display "---")
+(newline)
 
+(cont-frac-new (lambda (i) 1.0) (lambda (i) 1.0) 1)
+(cont-frac-new (lambda (i) 1.0) (lambda (i) 1.0) 2)
+(cont-frac-new (lambda (i) 1.0) (lambda (i) 1.0) 3)
+(cont-frac-new (lambda (i) 1.0) (lambda (i) 1.0) 4)
+(cont-frac-new (lambda (i) 1.0) (lambda (i) 1.0) 5)
 
+; 1.38
 
+#lang racket
 
+; 反復
+; bug。
+; TODO 1.37のやつのbugfix
+;(define (cont-frac-new-itr n d k)
+;  (define (next i result)
+;  (if (> i k)
+;      result
+;      (next (+ i 1) (/ (n i) (+ (d i) result)))))
+;  (next 1 0))
 
+(define (cont-frac-new-itr n d k)
+  (define (next i result)
+  (if (= i 0)
+      result
+      (next (- i 1) (/ (n i) (+ (d i) result)))))
+  (next k 0))
+(define (seq-of-num i)
+  (if (= (modulo i 3) 2)
+      (* (round (/ i 3)) 2.0)
+      1.0))
+(define (eurer-cont-frac k)
+  (define (const1 k) 1.0)
+  (+ (cont-frac-new-itr const1 seq-of-num k) 2))
+
+; test
+(eurer-cont-frac 1)
+(eurer-cont-frac 2)
+(eurer-cont-frac 3)
+(eurer-cont-frac 4)
+(eurer-cont-frac 5)
+(eurer-cont-frac 10000)
+
+1.39
+
+#lang racket
+
+(define (cont-frac-new-itr n d k)
+  (define (next i result)
+  (if (= i 0)
+      result
+      (next (- i 1) (/ (n i) (+ (d i) result)))))
+  (next k 0))
+(define (tan-cf x k)
+  (cont-frac-new-itr
+    (lambda (i) (if (= 1 i) x (- (* x x))))
+    (lambda (i) (- (* 2.0 i) 1))
+    k))
+
+(tan-cf 0 1)
+(tan-cf 0 2)
+(tan-cf 1 1)
+(tan-cf 1 2)
+(tan-cf 0.5 1)
+(tan-cf 0.5 2)
+
+次回は1.40
