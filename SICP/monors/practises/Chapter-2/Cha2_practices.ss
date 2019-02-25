@@ -1215,3 +1215,784 @@
 (paint (segments->painter seg-list_c))
 
 ;; waveの記述はきついのでパス。
+
+; 2.50
+#lang racket
+(require sicp-pict)
+
+ (define (flip-horiz painter) 
+   (transform-painter painter 
+                      (make-vect 1.0 0.0) 
+                      (make-vect 0.0 0.0) 
+                      (make-vect 1.0 1.0))) 
+  
+ (define (rotate180 painter) 
+   (transform-painter painter 
+                      (make-vect 1.0 1.0) 
+                      (make-vect 0.0 1.0) 
+                      (make-vect 1.0 0.0))) 
+  
+ (define (rotate270 painter) 
+   (transform-painter painter 
+                      (make-vect 0.0 1.0) 
+                      (make-vect 0.0 0.0) 
+                      (make-vect 1.0 1.0))) 
+
+(display "original\n")
+(paint einstein)
+
+(display "flip-horize\n")
+(paint (flip-horize einstein))
+
+
+; 2.51
+#lang racket
+(require sicp-pict)
+
+(define (beside painter1 painter2)
+  (let (( split-point (make-vect 0.0 0.5)))
+    (let (( paint-bottom
+            (transform-painter
+             painter1
+             (make-vect 0.0 0.0)
+             (make-vect 1.0 0.0)
+             split-point))
+          (paint-top
+           (transform-painter
+            painter2
+            split-point
+            (make-vect 1.0 0.5)
+            (make-vect 0.0 1.0))))
+      (lambda (frame)
+        (paint-bottom frame)
+        (paint-top frame )))))
+
+(paint (beside einstein einstein))
+
+
+#lang racket
+(require sicp-pict)
+
+(define (beside painter1 painter2)
+  (let (( split-point (make-vect 0.5 0.0)))
+    (let (( paint-left
+            (transform-painter
+             painter1
+             (make-vect 0.0 0.0)
+             split-point
+             (make-vect 0.0 1.0)))
+          (paint-right
+           (transform-painter
+            painter2
+            split-point
+            (make-vect 1.0 0.0)
+            (make-vect 0.5 1.0))))
+      (lambda (frame)
+        (paint-left frame)
+        (paint-right frame )))))
+
+ (define (rotate180 painter) 
+   (transform-painter painter 
+                      (make-vect 1.0 1.0) 
+                      (make-vect 0.0 1.0) 
+                      (make-vect 1.0 0.0))) 
+  
+ (define (rotate270 painter) 
+   (transform-painter painter 
+                      (make-vect 0.0 1.0) 
+                      (make-vect 0.0 0.0) 
+                      (make-vect 1.0 1.0))) 
+
+
+
+ (define (below-2 painter1 painter2) 
+   (rotate90 (beside (rotate270 painter1) (rotate270 painter2))))
+
+; 2.52 
+#lang racket
+(require sicp-pict)
+
+;; a
+(define wave 
+  (segments->painter (list 
+                      (make-segment (make-vect .25 0) (make-vect .35 .5)) 
+                      (make-segment (make-vect .35 .5) (make-vect .3 .6)) 
+                      (make-segment (make-vect .3 .6) (make-vect .15 .4)) 
+                      (make-segment (make-vect .15 .4) (make-vect 0 .65)) 
+                      (make-segment (make-vect 0 .65) (make-vect 0 .85)) 
+                      (make-segment (make-vect 0 .85) (make-vect .15 .6)) 
+                      (make-segment (make-vect .15 .6) (make-vect .3 .65)) 
+                      (make-segment (make-vect .3 .65) (make-vect .4 .65)) 
+                      (make-segment (make-vect .4 .65) (make-vect .35 .85)) 
+                      (make-segment (make-vect .35 .85) (make-vect .4 1)) 
+                      (make-segment (make-vect .4 1) (make-vect .6 1)) 
+                      (make-segment (make-vect .6 1) (make-vect .65 .85)) 
+                      (make-segment (make-vect .65 .85) (make-vect .6 .65)) 
+                      (make-segment (make-vect .6 .65) (make-vect .75 .65)) 
+                      (make-segment (make-vect .75 .65) (make-vect 1 .35)) 
+                      (make-segment (make-vect 1 .35) (make-vect 1 .15)) 
+                      (make-segment (make-vect 1 .15) (make-vect .6 .45)) 
+                      (make-segment (make-vect .6 .45) (make-vect .75 0)) 
+                      (make-segment (make-vect .75 0) (make-vect .6 0)) 
+                      (make-segment (make-vect .6 0) (make-vect .5 .3)) 
+                      (make-segment (make-vect .5 .3) (make-vect .4 0)) 
+                      (make-segment (make-vect .4 0) (make-vect .25 0))
+                      ;; add some line
+                      (make-segment (make-vect .4 .9) (make-vect .45 .9))
+                      (make-segment (make-vect .55 .9) (make-vect .6 .9))
+                      ))) 
+
+(paint wave)
+
+;; b
+;; c
+;; 省略
+
+; 2.53
+#lang racket
+
+(list 'a 'b 'c)
+(list (list 'george))
+(cdr '((x1 x2) (y1 y2)))
+(cadr '((x1 x2) (y1 y2)))
+(pair? (car '(a short list)))
+(memq 'red '((red shoes) (blue socks)))
+(memq 'red '(red shoes blue socks))
+
+; 2.54
+;; 式１と式２の両方から#t #tが帰ってきた場合は#t
+;; それ以外が帰ってきた時は#fを返したい時はandを使う。
+#lang racket
+
+(define (equal? list1 list2)
+  (let ((borth-list? (lambda (l1 l2)
+                      (and (pair? l1) (pair? l2)))))
+  (if (not (borth-list? list1 list2))
+      (if (eq? list1 list2) #t #f)
+      (and (equal? (car list1) (car list2))
+           (equal? (cdr list1) (cdr list2))))))
+
+;; TEST
+(equal? '(this is a list) '(this is a list))
+; #t
+
+(equal? '(this is a list) '(this (is a) list))
+; #f
+              
+; 2.55
+#lang racket
+;; 34にquoteの記載あり。
+''abc
+
+(quote 'abc)
+
+(quote (quote abc))
+
+(list (quote abc))
+
+(quote (abc)) ;; <=> '(abc) <=> (list 'a 'b)
+
+(list 'a 'b) ;'a'と'b'のリストである。
+
+;; リストを表示する時に使う表現を使ってクオートの複合オブジェクトを表現可能。
+;; 言い換えれば、quoteされたlistのシンタックスシュガーがある。
+;; 上の(list 'a 'b)と同等の書き方。
+'(a b)
+
+
+(list 'quote '(a b c)) ;; ''abc
+(list 'quote (list 'quote 'a)) ;'''abc
+
+;; よって、(car ''abc)を評価した場合、'quoteが返却される。
+;; 一つの可能性として、インタープリタ上ではlist構造になっており、quoteされたオブジェクトを評価
+;; していることが予想される。
+;; (list 'quote <expression>) <=> '<expression>なのかもしれない。
+
+;; 注34の例に関しての実験
+(define hoge (list 'car (list 'quote '(a b c))))
+(car hoge)
+(cadr hoge)
+
+; 2.56
+#lang racket
+;; EERIV ALGORITHM
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ;; x + 3:: sum
+        ((sum? exp)
+         (make-sum
+          (deriv (addend exp) var)
+          (deriv (augend exp) var)))
+
+         ;; x * 3 :: product
+         ((product? exp)
+          (make-sum
+           (make-product (multiplier exp) (deriv (multiplicand exp) var))
+           (make-product (multiplicand exp) (deriv (multiplier exp) var))))
+
+         ;; x ** 3 :: exponentiation
+         ((exponentation? exp)
+          (make-product
+           (make-product
+            (exponent exp)
+            (make-exponentiation (base exp)
+                                (make-sum (exponent exp) -1)))
+           (deriv (base exp) var)))
+
+         ;; other pattern :: error
+         (else
+          (error "unknown expression type: DERIV" exp ))))
+
+;;;;;; CONSTRUCTORS, SELECTRS, so on;;;;;;;;;;
+
+;;CHECKER
+(define (sum? x) (and (pair? x) (eq? (car x) '+)))
+(define (product? x) (and (pair? x) (eq? (car x) '*)))
+(define (exponentation? x) (and (pair? x) (eq? (car x) '**)))
+
+(define (variable? x) (symbol? x))
+(define (same-variable? v1 v2) (and (symbol? v1) (symbol? v2) (eq? v1 v2)))
+
+;; SELECTOR
+(define (addend x) (cadr x))
+(define (augend x) (caddr x))
+(define (multiplier x) (cadr x))
+(define (multiplicand x) (caddr x))
+(define (base x) (cadr x))
+(define (exponent x) (caddr x))
+
+(define (=number? exp num) (and (number? exp) (= exp num)))
+
+
+
+(define (** base exp) (* base (** base (- exp 1))))
+
+
+;; CONSTRUCTORS
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (list '+ a1 a2))))
+
+(define (make-product a1 a2)
+  (cond ((or (=number? a1 0) (=number? a2 0)) 0)
+        ((=number? a1 1) a2)
+        ((=number? a2 1) a1)
+        ((and (number? a1) (number? a2)) (* a1 a2))
+        (else (list '* a1 a2))))
+
+(define (make-exponentiation base exponent)
+  (cond ((=number? exponent 0) 1)
+        ((=number? exponent 1) base)
+        ((and (number? base) (number? exponent))
+         (** base exponent))
+        (else (list '** base exponent))))
+
+;;;;;; TEST
+(deriv '(+ x 3) 'x)
+;;1
+
+(deriv '(* x y) 'x)
+;;'y
+
+(deriv '(* (* x y) (+ x 3)) 'x)
+;;'(+ (* x y) (* (+ x 3) y))
+
+(deriv '(* (* 3 y) (** x 3)) 'x)
+;; '(* (* 3 y) (* 3 (** x 2)))
+        
+; 2.57
+#lang racket
+;; EERIV ALGORITHM
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ;; x + 3:: sum
+        ((sum? exp)
+         (make-sum
+          (deriv (addend exp) var)
+          (deriv (augend exp) var)))
+
+         ;; x * 3 :: product
+         ((product? exp)
+          (make-sum
+           (make-product (multiplier exp) (deriv (multiplicand exp) var))
+           (make-product (multiplicand exp) (deriv (multiplier exp) var))))
+
+         ;; x ** 3 :: exponentiation
+         ((exponentation? exp)
+          (make-product
+           (make-product
+            (exponent exp)
+            (make-exponentiation (base exp)
+                                (make-sum (exponent exp) -1)))
+           (deriv (base exp) var)))
+
+         ;; other pattern :: error
+         (else
+          (error "unknown expression type: DERIV" exp ))))
+
+;;;;;; CONSTRUCTORS, SELECTRS, so on;;;;;;;;;;
+
+;;CHECKER
+(define (sum? x) (and (pair? x) (eq? (car x) '+)))
+(define (product? x) (and (pair? x) (eq? (car x) '*)))
+(define (exponentation? x) (and (pair? x) (eq? (car x) '**)))
+
+(define (variable? x) (symbol? x))
+(define (same-variable? v1 v2) (and (symbol? v1) (symbol? v2) (eq? v1 v2)))
+
+;; SELECTOR
+(define (addend x) (cadr x))
+
+(define (multiplier x) (cadr x))
+
+(define (base x) (cadr x))
+(define (exponent x) (caddr x))
+
+; 2.58
+
+(define (=number? exp num) (and (number? exp) (= exp num)))
+
+
+
+(define (** base exp) (* base (** base (- exp 1))))
+
+
+;; CONSTRUCTORS
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (list '+ a1 a2))))
+
+(define (make-product a1 a2)
+  (cond ((or (=number? a1 0) (=number? a2 0)) 0)
+        ((=number? a1 1) a2)
+        ((=number? a2 1) a1)
+        ((and (number? a1) (number? a2)) (* a1 a2))
+        (else (list '* a1 a2))))
+
+(define (make-exponentiation base exponent)
+  (cond ((=number? exponent 0) 1)
+        ((=number? exponent 1) base)
+        ((and (number? base) (number? exponent))
+         (** base exponent))
+        (else (list '** base exponent))))
+
+(define (augend x)
+  (if (null? (cddr x))
+      0
+      (cons '+ (cddr x))))
+
+(define (multiplicand x)
+  (if (null? (cddr x))
+      1
+      (cons '* (cddr x))))
+ 
+
+;;;;;; TEST
+(deriv '(* x y (+ x 3)) 'x)
+;; '(+ (* x y) (* y (+ x 3)))
+        
+; 2.58.  
+; a
+#lang racket
+;; EERIV ALGORITHM
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ;; x + 3:: sum
+        ((sum? exp)
+         (make-sum
+          (deriv (addend exp) var)
+          (deriv (augend exp) var)))
+
+         ;; x * 3 :: product
+         ((product? exp)
+          (make-sum
+           (make-product (multiplier exp) (deriv (multiplicand exp) var))
+           (make-product (multiplicand exp) (deriv (multiplier exp) var))))
+
+         ;; x ** 3 :: exponentiation
+         ((exponentation? exp)
+          (make-product
+           (make-product
+            (exponent exp)
+            (make-exponentiation (base exp)
+                                (make-sum (exponent exp) -1)))
+           (deriv (base exp) var)))
+
+         ;; other pattern :: error
+         (else
+          (error "unknown expression type: DERIV" exp ))))
+
+;;;;;; CONSTRUCTORS, SELECTRS, so on;;;;;;;;;;
+
+;;CHECKER
+(define (sum? x) (and (pair? x) (eq? (cadr x) '+)))
+(define (product? x) (and (pair? x) (eq? (cadr x) '*)))
+(define (exponentation? x) (and (pair? x) (eq? (cadr x) '**)))
+
+(define (variable? x) (symbol? x))
+(define (same-variable? v1 v2) (and (symbol? v1) (symbol? v2) (eq? v1 v2)))
+
+;; SELECTOR
+(define (addend x) (car x))
+(define (augend x) (caddr x))
+(define (multiplier x) (car x))
+(define (multiplicand x) (caddr x))
+(define (base x) (car x))
+(define (exponent x) (caddr x))
+
+(define (=number? exp num) (and (number? exp) (= exp num)))
+
+
+
+(define (** base exp) (* base (** base (- exp 1))))
+
+
+;; CONSTRUCTORS
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (list a1 '+ a2))))
+
+(define (make-product a1 a2)
+  (cond ((or (=number? a1 0) (=number? a2 0)) 0)
+        ((=number? a1 1) a2)
+        ((=number? a2 1) a1)
+        ((and (number? a1) (number? a2)) (* a1 a2))
+        (else (list a1 '* a2))))
+
+(define (make-exponentiation base exponent)
+  (cond ((=number? exponent 0) 1)
+        ((=number? exponent 1) base)
+        ((and (number? base) (number? exponent))
+         (** base exponent))
+        (else (list base '** exponent))))
+
+ 
+
+;;;;;; TEST
+(deriv '((3 * x) * (2 * y)) 'x)
+;; '(+ (* x y) (* y (+ x 3)))
+
+; b
+;; 面倒なのでパス
+
+; 2.59
+#lang racket
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+        ((equal? x (car set)) true)
+        (else (element-of-set? x (cdr set)))))
+
+(define (adjoin-set x set)
+  (if (element-of-set? x set)
+      set
+      (cons x set)))
+
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2) '()))
+        ((element-of-set? (car set1) set2)
+         (cons (car set1) (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+
+;; union-set
+;; 1. set1 がnullならばset2を返す。
+;; 2. car set1がset2に含まれていないのならば、set２を返す。
+;; 3. 含まれていないならば、(union-set (cdr set1) (adjoin-set (car set1) set2))
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((element-of-set? (car set1) set2) set2)
+        ( else (union-set
+                (cdr set1)
+                (adjoin-set (car set1) set2)))))
+
+;; TEST
+(union-set '() '())
+
+(union-set '(1 2 3) '(1 2 3))
+
+(union-set '(1 2 3) '(3 4 5))
+
+; 2.60
+#lang racket
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+(define (adjoin-set x set) (cons x set))
+
+(define (union-set set1 set2) (append set1 set2))
+
+(define (remove-set x set)
+  (cond ((null? set) '())
+        ((equal? x (car set)) (cdr set))
+        (else (cons (car set) (remove-set x (cdr set))))))
+          
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+        ((element-of-set? (car set1) set2)
+         (cons (car set1) (intersection-set (cdr set1) (remove-set (car set1) set2))))
+        (else (intersection-set (cdr set1) set2))))
+
+(intersection-set '(2 3 1 1 3 4) '(1 3 4))
+
+;; 2.61
+#lang racket
+(define (adjoin-set x set)
+  (if (null? set)
+      (list x)
+      (let ((smallest (car set)))
+        (cond ((= x smallest) set)
+              ((< x smallest) (cons x set))
+              (else (cons (car set) (adjoin-set x (cdr set))))))))
+;;test
+(adjoin-set 1 '(2 3 4 5))
+(adjoin-set 5 '(1 2 3 4))
+(adjoin-set 5 '(1 2 3 4 5))
+
+; 2.62
+(define (union-set set1 set2)
+  (cond ((and (null? set1) (null? set2)) '())
+        ((null? set1) set2)
+        ((null? set2) set1)
+        (else (let ((smallest-set1 (car set1))
+                    (smallest-set2 (car set2)))
+                (cond ((= smallest-set1 smallest-set2) 
+                       (cons smallest-set1 (union-set (cdr set1) (cdr set2))))
+                      ((> smallest-set1 smallest-set2) 
+                       (cons smallest-set2 (union-set set1 (cdr set2))))
+                      ((< smallest-set1 smallest-set2)
+                       (cons smallest-set1 (union-set (cdr set1) set2))))))))
+; TEST
+(union-set '(1 2 3) '(2 3 4 5))
+
+; 2.63
+#lang racket
+(define (tree->list-1 tree)
+  (if (null? tree)
+      '()
+      (append (tree->list-1 (left-branch tree))
+              (cons (entry tree)
+                    (tree->list-1
+                     (right-branch tree ))))))
+
+(define (tree->list-2 tree)
+  (define (copy-to-list tree result-list)
+    (if (null? tree)
+        result-list
+        (copy-to-list (left-branch tree)
+                      (cons (entry tree)
+                            (copy-to-list
+                             (right-branch tree)
+                             result-list )))))
+  (copy-to-list tree '()))
+
+; a
+;; 同じリストを生成する。
+
+; b
+;; １の方が関数を２回づつ呼ぶ必要があるので遅い。
+
+;; 2.64
+#lang racket
+(define (partial-tree elts n)
+  (if (= n 0)
+      (cons '() elts)
+      (let (( left-size (quotient (- n 1) 2)))
+        (let (( left-result
+                (partial-tree elts left-size )))
+          (let (( left-tree (car left-result ))
+                (non-left-elts (cdr left-result ))
+                (right-size (- n (+ left-size 1))))
+            (let (( this-entry (car non-left-elts ))
+                  (right-result
+                   (partial-tree
+                    (cdr non-left-elts)
+                    right-size )))
+              (let (( right-tree (car right-result ))
+                    (remaining-elts
+                     (cdr right-result )))
+                (cons (make-tree this-entry
+                                 left-tree
+                                 right-tree)
+                      remaining-elts ))))))))
+
+(define (make-tree entry left right)
+  (list entry left right))
+
+(partial-tree '(1 3 5 7 9 11) 6)
+; '((5 (1 () (3 () ())) (9 (7 () ()) (11 () ()))))
+
+;;;; a
+
+;;  partial-treeのeltsはソートされたリストが引数にとられることを想定します。
+;; 引数に取られたリストは、まず一番左の要素を何にするかを決定するところからはじまります。
+;; left-resultを再帰的に実行します。この時、再帰的に呼び出されるごとに木構造の階層が１つづつ下がっていきます。
+;; 左の要素が決まると、右の要素の決定を行います。最左端は要素の一番小さい数が配置され、それに紐づく右の要素には２番目に小さい数が配置されます。
+;; 角要素に対して幾つの要素を紐づけられるかは、left-size, right-sizeで決定します。
+;; left-sizeは1/2ずつ減少するので、左の要素の最左端は１つ以下の要素しか保持できないようになっています。（最左端の場合、小さい数はないので、妥当です。）
+;; これに対して最右端は１つ以下の要素しか持てません。
+;; 左、中央、右という順番で要素が決まっていく。これを繰り返し、木構造を決定していく。
+
+;;;; b
+;; 1/2ずつ要素が現象するので、
+;; T(n) = 2 * T(n/2) + O(1)
+;; -> O(n)
+ 
+
+;; 2.65
+ (define (union-set tree1 tree2) 
+   (list->tree (union-set-orderd-list (tree->list tree1) 
+                          (tree->list tree2)))) 
+  
+ (define (intersection-set tree1 tree2) 
+   (list->tree (intersection-set-orderd-list (tree->list tree1) 
+                                 (tree->list tree2)))) 
+
+ ;;2.66
+(define (lookup given-key set-of-records)
+  (cond ((null? set-of-records) false)
+        (( equal? given-key (key (car set-of-records )))
+         (car set-of-records ))
+        (( > given-key (key (car-set-of-records)))
+         (lookup given-key (cdr set-of-records)))
+        (( < given-key (key (car-set-of-records))) false)))
+
+;; 2.67
+#lang racket
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+        
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit"))))
+
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree
+                    (make-leaf 'D 1)
+                    (make-leaf 'C 1)))))
+
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+
+(decode sample-message sample-tree)
+
+; 2.68
+#lang racket
+;;;;;;;;;; COMMON FUNCTIONS ;;;;;;;;;;;;;;
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (symbol-of-tree tree x)
+  (define (iter symbol-list x)
+    (cond ((null? symbol-list) #f)
+          ((equal? (car symbol-list) x) #t)
+          (else (iter (cdr symbol-list) x))))
+  
+  (if (null? tree)
+      #f
+      (iter (symbols tree) x)))
+
+(define (encode-symbol x set)
+  (cond ((leaf? set) '())
+        ((symbol-of-tree (left-branch set) x)
+         (cons 0 (encode-symbol x (left-branch set))))
+        ((symbol-of-tree (right-branch set) x)
+         (cons 1 (encode-symbol x (right-branch set))))
+        (else (error "character:" x "is not exist in tree"))))
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+;; TEST SETES
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree
+                    (make-leaf 'D 1)
+                    (make-leaf 'C 1)))))
+
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+
+
+;; TEST
+(symbol-of-tree '() 'A)
+(symbol-of-tree sample-tree 'A)
+(symbol-of-tree sample-tree 'B)
+(symbol-of-tree sample-tree 'C)
+(symbol-of-tree sample-tree 'D)
+(symbol-of-tree sample-tree 'E)
+
+(encode-symbol 'A sample-tree)
+(encode-symbol 'B sample-tree)
+(encode-symbol 'C sample-tree)
+(encode-symbol 'D sample-tree)
+
+(encode '(A D A B B C A) sample-tree)
+;> '(0 1 1 0 0 1 0 1 0 1 1 1 0)
