@@ -1996,3 +1996,231 @@
 
 (encode '(A D A B B C A) sample-tree)
 ;> '(0 1 1 0 0 1 0 1 0 1 1 1 0)
+
+; 2.69
+#lang racket
+(require racket/trace)
+;;;; COMMON FUNCTION ;;;;;;;;
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+(define (adjoin-set x set)
+  (cond (( null? set) (list x))
+        ((< (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set)(adjoin-set x (cdr set ))))))
+
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+      '()
+      (let ((pair (car pairs )))
+        (adjoin-set (make-leaf (car pair) ; symbol
+                               (cadr pair)) ; frequency
+                    (make-leaf-set (cdr pairs ))))))
+
+
+(define (encode-symbol x set)
+  (cond ((leaf? set) '())
+        ((symbol-of-tree (left-branch set) x)
+         (cons 0 (encode-symbol x (left-branch set))))
+        ((symbol-of-tree (right-branch set) x)
+         (cons 1 (encode-symbol x (right-branch set))))
+        (else (error "character:" x "is not exist in tree"))))
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+(define (symbol-of-tree tree x)
+  (define (iter symbol-list x)
+    (cond ((null? symbol-list) #f)
+          ((equal? (car symbol-list) x) #t)
+          (else (iter (cdr symbol-list) x))))
+  
+  (if (null? tree)
+      #f
+      (iter (symbols tree) x)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit"))))
+
+;;;;;;;; ANSWERS ;;;;;;;;;
+(define (generate-huffman-tree pairs)
+  (successive-merge (make-leaf-set pairs)))
+
+(define (successive-merge set)
+  (if (= (length set) 1)
+      ;; 全体でTreeを作成する際にListが２重になる。
+      (car set)
+      (let ((left (car set))
+            (right (cadr set)))
+        (let ((tree (make-code-tree left right)))
+          (let ((next (adjoin-set tree (cddr set))))
+            (successive-merge next))))))
+
+(define test-tree (generate-huffman-tree '((A 8) (B 3) (C 1) (D 1) (E 1) (F 1) (G 1) (H 1))))
+test-tree
+(define message '(A B C D))
+(define bits (encode message test-tree))
+(define decode-message (decode bits test-tree))
+
+message
+bits
+decode-message
+
+; 2.70
+#lang racket
+(require racket/trace)
+;;;; COMMON FUNCTION ;;;;;;;;
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+(define (adjoin-set x set)
+  (cond (( null? set) (list x))
+        ((< (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set)(adjoin-set x (cdr set ))))))
+
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+      '()
+      (let ((pair (car pairs )))
+        (adjoin-set (make-leaf (car pair) ; symbol
+                               (cadr pair)) ; frequency
+                    (make-leaf-set (cdr pairs ))))))
+
+
+(define (encode-symbol x set)
+  (cond ((leaf? set) '())
+        ((symbol-of-tree (left-branch set) x)
+         (cons 0 (encode-symbol x (left-branch set))))
+        ((symbol-of-tree (right-branch set) x)
+         (cons 1 (encode-symbol x (right-branch set))))
+        (else (error "character:" x "is not exist in tree"))))
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+(define (symbol-of-tree tree x)
+  (define (iter symbol-list x)
+    (cond ((null? symbol-list) #f)
+          ((equal? (car symbol-list) x) #t)
+          (else (iter (cdr symbol-list) x))))
+  
+  (if (null? tree)
+      #f
+      (iter (symbols tree) x)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit"))))
+
+;;;;;;;; ANSWERS ;;;;;;;;;
+(define (generate-huffman-tree pairs)
+  (successive-merge (make-leaf-set pairs)))
+
+(define (successive-merge set)
+  (if (= (length set) 1)
+      ;; 全体でTreeを作成する際にListが２重になる。
+      (car set)
+      (let ((left (car set))
+            (right (cadr set)))
+        (let ((tree (make-code-tree left right)))
+          (let ((next (adjoin-set tree (cddr set))))
+            (successive-merge next))))))
+
+;; 2.70
+(define sample-list '((A 2) (GET 2) (SHA 3) (WAH 1) (BOOM 1) (JOB 2) (NA 16) (YIP 9)))
+(define sample-tree (generate-huffman-tree sample-list))
+
+(define message1 '(GET A JOB))
+(define message2 '(SHA NA NA NA NA NA NA NA NA))
+(define message3 '(GET A JOB))
+(define message4 '(SHA NA NA NA NA NA NA NA NA))
+(define message5 '(WAH YIP YIP YIP YIP YIP YIP YIP YIP YIP))
+(define message6 '(SHA BOOM))
+
+(define bit1 (encode message1 sample-tree))
+(define bit2 (encode message2 sample-tree))
+(define bit3 (encode message3 sample-tree))
+(define bit4 (encode message4 sample-tree))
+(define bit5 (encode message5 sample-tree))
+(define bit6 (encode message6 sample-tree))
+
+(decode bit1 sample-tree)
+(decode bit2 sample-tree)
+(decode bit3 sample-tree)
+(decode bit4 sample-tree)
+(decode bit5 sample-tree)
+(decode bit6 sample-tree)
+
+
+;; 2.71
