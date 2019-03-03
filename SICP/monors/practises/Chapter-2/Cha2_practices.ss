@@ -2224,3 +2224,254 @@ decode-message
 
 
 ;; 2.71
+;; n = 5
+;;31
+;;|\ 
+;;15 16
+;;|\
+;;7 8
+;;|\
+;;3 4
+;;|\
+;;2 1
+
+; 2.72
+; パス
+
+; 2.73
+(define (deriv exp var)
+  (cond (( number? exp) 0)
+        (( variable? exp) (if (same-variable? exp var) 1 0))
+        (else ((get 'deriv (operator exp)); op='deriv, type={sum, produce}
+               (operands exp) var ))));; 演算式をgetしてoperandsを適用
+
+; a.
+; number?とvariable?はderivとインターフェイスをジェネリックに統一できないため.
+
+; b.
+(define (install-sum-deriv)
+  (define (deriv exp var)
+    (make-sum (make-product
+                (deriv (addend exp) var)
+                (deriv (augend exp) var))))
+  (put 'deriv '+ deriv))
+
+
+(define (install-product-deriv)
+  (define (deriv exp var)
+    (make-sum (make-product
+                (deriv (addend exp) var)
+                (deriv (augend exp) var))))
+  (put 'deriv '* deriv))
+
+; c.
+#lang racket
+;; define put and get
+(define *the-table* (make-hash));make THE table 
+(define (put key1 key2 value) (hash-set! *the-table* (list key1 key2) value));put 
+(define (get key1 key2) (hash-ref *the-table* (list key1 key2) #f));get 
+
+(define (number exp num)
+  (and (number? exp) (equal? exp num)))
+(define (variable? exp) (symbol? exp))
+(define (same-variable? exp var)
+  (and (variable? exp) (variable? var) (eq? exp var)))
+(define (** base exponent)
+  (if (= exponent 0)
+      1
+      (* base (** base (- exponent 1)))))
+
+;; Define Packages
+(define (install-sum-deriv-package)
+  (display "start install sum-deriv-package -> ")
+  
+  (define (sum-deriv exp var)
+    (make-sum (deriv (augend exp) var)
+              (deriv (addend exp) var)))
+  (define (make-sum x1 x2)
+    (cond ((number x1 0) x2)
+          ((number x2 0) x1)
+          ((and (number? x1) (number? x2)) (+ x1 x2))
+          (else (list '+ x1 x2))))
+
+  (define (augend exp) (car exp))
+  (define (addend exp) (cadr exp))
+  (put 'deriv '+ sum-deriv)
+  (put 'make-sum '+ make-sum)
+  
+  'done
+  )
+
+(define (install-product-deriv-package)
+  (display "start install product-deriv-package -> ")
+  (define (product-deriv exp var)
+    (make-sum (make-product
+               (multiplicand exp)
+               (deriv (multiplier exp) var))
+              (make-product
+               (deriv (multiplicand exp) var)
+               (multiplier exp))))
+
+  (define (make-product x1 x2)
+    (cond ((or (number x1 0) (number x2 0)) 0)
+          ((number x1 1) x2)
+          ((number x2 1) x1)
+          ((and (number? x1) (number? x2)) (* x1 x2))
+          (else (list '* x1 x2))))
+
+  (define (make-sum x1 x2) ((get 'make-sum '+) x1 x2))
+  
+  (define (multiplicand exp) (car exp))
+  (define (multiplier exp) (cadr exp))
+
+  (put 'deriv '* product-deriv)
+  (put 'make-product '* make-product)
+  'done
+  )
+
+(define (install-exponent-deriv-package)
+  (display "start install exponent-deriv-package -> ")
+  (define (exponent-deriv exp var)
+    (make-product (exponent exp)
+                  (make-exponent (base exp) (- (exponent exp) 1))))
+
+  (define (make-exponent base exponent)
+    (cond ((number exponent 1) exponent)
+          ((number exponent 0) 0)
+          ((number base 0) 0)
+          ((and (number? base) (number? exponent)) (** base exponent))
+          (else (list '** base exponent))))
+  
+  (define (make-product x y) ((get 'make-product '*) x y))
+  (define (make-sum x1 x2) ((get 'make-sum '+) x1 x2))
+  
+  (define (base exp) (car exp))
+  (define (exponent exp) (cadr exp))
+
+  (put 'deriv '** exponent-deriv)
+
+  'done
+  )
+
+(install-sum-deriv-package)
+(install-product-deriv-package)
+(install-exponent-deriv-package)
+
+(define (deriv exp var)
+  (cond (( number? exp) 0)
+        (( variable? exp) (if (same-variable? exp var) 1 0))
+        (else ((get 'deriv (operator exp))
+               (operands exp) var ))))
+(define (operator exp) (car exp))
+(define (operands exp) (cdr exp))
+
+;; TEST
+(deriv '(* (* x y) (+ x 3)) 'x)
+; '(+ (* x y) (* y (+ x 3)))
+(deriv '(* (* 3 y) (** x 3)) 'x)
+;; '(* (* 3 y) (* 3 (** x 2)))
+
+;d.
+; put内のmetnodの識別子とderivの順番を変えるだけ。
+
+; 2.74
+#lang racket
+(define *the-table* (make-hash));make THE table 
+(define (put key1 key2 value) (hash-set! *the-table* (list key1 key2) value));put 
+(define (get key1 key2) (hash-ref *the-table* (list key1 key2) #f));get 
+
+(define (hoge-company)
+  (define personnel-data
+    ; (name (address sarary))
+    '((taro (tokyo 1000)) (jiro (osaka 20000))))
+
+  (define (get-record data key)
+      (if (null? data) 
+          '()
+          (let ((person (car data)))
+            (if (eq? (name person) key) 
+                person
+                (get-record (cdr data) key)))))
+
+  (define (name person) (car person))
+  (define (sarary person) (cadadr person))
+
+  (put 'get-data 'hoge personnel-data)
+  (put 'get-record 'hoge get-record)
+  (put 'get-sarary 'hoge sarary)
+)
+
+(define (foo-company)
+  (define personnel-data
+    ; ((name) (address) (sarary))
+    '(((nobi) (tokyo) (1000)) ((ken) (osaka) (20000))))
+
+  (define (get-record data key)
+      (if (null? data) 
+          '()
+          (let ((person (car data)))
+            (if (eq? (name person) key) 
+                person
+                (get-record (cdr data) key)))))
+
+  (define (name person) (car (car person)))
+  (define (sarary person) (caaddr person))
+
+  (put 'get-data 'foo personnel-data)
+  (put 'get-record 'foo get-record)
+  (put 'get-sarary 'foo sarary)
+)
+
+(hoge-company)
+(foo-company)
+;; Define Common
+(define (get-data name)
+  (let ((file (get 'get-data name)))
+    (if (pair? file)
+        (make-taged-data name file)
+        (error name " company file does not exist"))))
+
+(define (make-taged-data tag contents) (list tag contents))
+(define (tag file) (car file))
+(define (contents file) (cadr file))
+
+;; a.
+;; データに会社のタグがついている必要がある。
+(define (get-record file name)
+  (make-taged-data (tag file)
+                   ((get 'get-record (tag file))
+                    (contents file)
+                    name)))
+
+;; TEST
+(get-record (get-data 'hoge) 'taro)
+(get-record (get-data 'foo) 'nobi)
+
+; b.
+;; nameに紐づくデータに会社のタグがつく必要がある。
+(define (get-sarary personnel-data)
+  ((get 'get-sarary (tag personnel-data)) (contents personnel-data)))
+
+(define hoge-taro (get-record (get-data 'hoge) 'taro))
+(define foo-taro (get-record (get-data 'foo) 'taro))
+
+(get-sarary hoge-taro)
+;(get-sarary foo-taro)
+
+; c.
+(define (find-employee-record name files)
+  (if (null? files)
+       '()
+       (let ((file (car files)))
+         (let ((person-data (get-record file name)))
+           (if (not (null? (contents person-data)))
+               person-data
+               (find-employee-record name (cdr files)))))))
+
+;TEST
+(define all-company-files (list (get-data 'hoge) (get-data 'foo)))
+(find-employee-record 'taro all-company-files)
+(find-employee-record 'nobi all-company-files)
+
+;; d.
+;; 会社のパッケージを作成し、putでメソッドを登録すればよい。
