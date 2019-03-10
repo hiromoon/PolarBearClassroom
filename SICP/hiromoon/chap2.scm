@@ -1025,10 +1025,11 @@ ubsets s) (if (null? s)
          (cons (car set1) (union-set (cdr set1) set2)))
         (else (cons (car set2) (union-set set1 (cdr set2))))))
 
+;practice2-63
 ;図2-16
-'(7 '(3 '(1) '(5)) '(9 '() '(11)))
-'(3 '(1) '(7 '(5) '(9 '() '(11))))
-'(5 '(3 '(1) '()) '(9 '(7) '(11)))
+(define a '(7 (3 (1 () ()) (5 () ())) (9 () (11 () ()))))
+(define b '(3 (1 () ()) (7 (5 () ()) (9 () (11 () ())))))
+(define c '(5 (3 (1 () ()) ()) (9 (7 () ()) (11 () ()))))
 
 (define entry car)
 (define left-branch cadr)
@@ -1046,14 +1047,58 @@ ubsets s) (if (null? s)
 
 (define (tree->list-2 tree)
   (define (copy-to-list tree result-list)
-    (if null? tree)
-    result-list
-    (copy-to-list (left-branch tree)
-                  (cons (entry tree)
-                        (copy-to-list
-                          (right-branch tree)
-                          result-list))))
+    (if (null? tree)
+        result-list
+        (copy-to-list (left-branch tree)
+                      (cons (entry tree)
+                            (copy-to-list
+                              (right-branch tree)
+                              result-list)))))
   (copy-to-list tree '()))
 
 ;a
+(tree->list-1 a)
+(tree->list-2 a)
+(tree->list-1 b)
+(tree->list-2 b)
+(tree->list-1 c)
+(tree->list-2 c)
+;全部'(1 3 5 7 9 11) で同じ結果を返す
+
 ;b
+;線形再帰なのでtree->list-1のほうが遅い気がする。
+;Oは↓の通りらしい
+;tree->list-1 O(n * log n)
+;tree->list-2 O(n)
+
+;practice2-64
+(define (list->tree elements)
+  (car (partial-tree elements (length elements))))
+(define (partial-tree elts n)
+  (if (= n 0)
+    (cons '() elts)
+    (let ((left-size (quotient (- n 1) 2)))
+      (let ((left-result
+              (partial-tree elts left-size)))
+        (let ((left-tree (car left-result))
+              (non-left-elts (cdr left-result))
+              (right-size (- n (+ left-size 1))))
+          (let ((this-entry (car non-left-elts))
+                (right-result
+                  (partial-tree
+                    (cdr non-left-elts)
+                    right-size)))
+            (let ((right-tree (car right-result))
+                  (remaining-elts
+                    (cdr right-result)))
+              (cons (make-tree this-entry
+                               left-tree
+                               right-tree)
+                    remaining-elts))))))))
+
+;要素のリストと要素の数を受け取る
+;要素の数が0の場合は、葉に当たるので空リストを追加して返す
+;要素の数が1以上の場合
+; 親ノードを引いた半分が左の木の要素数になるのでleft-sizeとして保存する
+; partial-tree に要素とleft-sizeを渡して、左の部分木を作る(left-tree)
+; (left)
