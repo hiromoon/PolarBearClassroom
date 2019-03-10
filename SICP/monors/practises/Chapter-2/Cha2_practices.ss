@@ -2943,3 +2943,51 @@ decode-message
 (equ? complex_2 complex_1)
 (equ? 1 2)
 (equ? 2 2)
+
+;; package単位に定義しないといけなかったので、間違っていた。
+(define (install-scheme-number-packeage)
+  ; ...
+  (put 'equ? '(scheme-number scheme-number) =)
+  'done
+  )
+
+(define (install-rational-package)
+  ;; ...
+  (define (equ? x y)
+    (= (* (number x) (denom y)) (* (denom x) (number y))))
+  (put 'equ? '(rational rational) equ?)
+  'done)
+
+; ('complex ('rectangle)) ('complex '(rectanble))
+; ('complex ('rectangle)) ('complex '(poler))
+; ('complex (poler)) ('complex '(rectanble))
+; ('complex (poler)) ('complex '(poler))
+(define (install-complex-package)
+  ;;...
+  (define (equ? x y)
+    
+  (put 'equ? '(complex 'complex) equ?)
+  'done)
+
+(define (install-rectangle-package)
+  ;;...
+  (define (equ? x y)
+    (and (= (real-part x) (real-part y)) (= (imag-part x) (imag-part y)))))
+  
+    ;;...
+  (put 'equ? '(complex complex) equ?)
+  'done)
+
+(define (equ? x y) (apply-generic 'equ? x y))
+
+;  2.80
+(define (=zero? x) (apply-generic '=zero? x))
+
+(put '=zero? 'scheme-number (lambda (x) (= x 0)))
+
+(put '=zero? 'rational-number (lambda (x) (= (number x) 0)))
+
+(put '=zero? 'complex-number (lambda (x) (= (real-part x) (image-part x) 0)))
+
+
+
