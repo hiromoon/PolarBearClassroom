@@ -848,4 +848,102 @@ TODO
 (tan-cf 0.5 1)
 (tan-cf 0.5 2)
 
-次回は1.40
+1.40
+
+練習問題 1.40: 次のような形の式でnewtons-method手続きと組 み合わせて使うことによって、
+三次方程式 x3 + ax2 + bx + c = 0 の零点の近似値を求めることができるような手続き
+cubic を定義 せよ。
+(newtons-method (cubic a b c) 1)
+
+g(x) = x3 + ax2 + bx + c = 0となる不動点を求めればよいという理解。
+演習問題までの説明で出てきた式を使い回せばいける。
+
+#lang racket
+
+(define (cubic a b c) (lambda (x) (+ (cube x) (* a (square x)) (* b x) c)))
+(define (newtons-method g guess) (fixed-point (newton-transform g) guess))
+(define (newton-transform g)
+(lambda (x) (- x (/ (g x) ((deriv g) x)))))
+(define (deriv g)
+(lambda (x) (/ (- (g (+ x dx)) (g x)) dx)))
+(define dx 0.00001)
+(define (cube x) (* x x x))
+(define (square x) (* x x))
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+(define (close-enough? v1 v2) (< (abs (- v1 v2))
+tolerance)) (define (try guess)
+(let ((next (f guess)))
+(if (close-enough? guess next)
+next
+(try next)))) (try first-guess))
+
+(newtons-method (cubic 1 2 8) 0.01)
+; -1.9999999999998497 となり、解 -2 に近い値がでできたのでたぶんOK。
+
+1.41
+
+練習問題 1.41: 引数がひとつの手続きを引数として取り、
+その手 続きを二回適用する手続きを返す手続き double を定義せよ。
+例えば、inc が引数に 1 を足す手続きであれば、(double inc) は 2 を 足す手続きになる。次の式はどんな値を返すだろうか。
+(((double (double double)) inc) 5)
+
+#lang racket
+
+(define (double f)
+  (lambda (x) (f (f x))))
+
+; test
+(define (inc x)
+  (+ x 1))
+((double inc) -1)  ; expect 1
+((double inc) 0)   ; expect 2
+((double inc) 1)   ; expect 3
+
+(((double (double double)) inc) 5) ; expect 21。自分の予想は11だったので、今の理解ではこの式を展開できていないと思われ。
+
+1.42
+
+練習問題 1.42: f と g を二つの 1 引数関数とする。
+g に f を合成 (composition) するということを、関数 x 􏰀→ f(g(x)) として定義する。
+合成を実装する手続き compose を定義せよ。例えば inc が引 数に 1 を足す手続きであれば、以下のようになる。
+((compose square inc) 6) 49
+
+#lang racket
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+; test
+(define (inc x)(+ x 1))
+(define (square x) (* x x))
+((compose square inc) 6) ; 49
+
+1.43
+
+練習問題 1.43: f が数値関数で n が正の整数であれば、
+f の n 回適用 というものを作ることができ、それは x での値が
+f (f (. . . (f (x)) . . . )) である関数として定義できる。
+例えば、f が関数 x 􏰀→ x + 1 であれ ば、f の n 回適用は関数 x 􏰀→ x + n となる。
+もし f が数値を二乗 する演算であれば、f の n 回適用は、引数を 2n 乗する関数になる。 
+入力として f を計算する手続きと正の整数 n を取り、f の n 回適 用を計算する手続きを返す手続きを書け。
+その手続きは、以下の ように使えるはずである。
+((repeated square 2) 5) 625
+
+#lang racket
+
+(define (repeated f n)
+  (if (= n 1)
+      f
+      (repeated (compose f f) (- n 1))))
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+; test
+(define (square x) (* x x))
+((repeated square 1) 5) ; expect  25 ((square(5))^1)
+((repeated square 2) 5) ; expect 625 ((square(5))^2)
+
+; 一応のは満たしたが、いまいち不安。
+
+
