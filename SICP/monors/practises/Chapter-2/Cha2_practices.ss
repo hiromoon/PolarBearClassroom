@@ -2990,4 +2990,32 @@ decode-message
 (put '=zero? 'complex-number (lambda (x) (= (real-part x) (image-part x) 0)))
 
 
-
+;; 2.81
+; a.
+; 演算が見つからない場合、型変換を行う。しかし、complex->complexがあるので、apply-genericが永遠に呼ばれ続ける。
+; 
+; b.
+; 演算がみつからない場、無限ループをすることになるので不要。
+; 
+; c.
+(define (apply-generic op . args)
+  (let ((type-tags (map tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if (and (= (length args) 2)
+                   (not (equal? (car type-tags) (cadr type-tags))))
+              (let ((type1 (car type-tags))
+                    (type2 (cadr type-tags))
+                    (a1 (car args))
+                    (a2 (cadr args)))
+                (let ((t1->t2 (get-coercion type1 type2))
+                      (t2->t1 (get-coersion type2 type1)))
+                  (cond (t1->t2
+                          (apply-generic op (t1->t2 t1) t2))
+                        (t2->t1
+                          (apply-generic op t1 (t2->t1) t1))
+                        (else error "No method for these types"
+                              (list op type-tags)))))
+                (error "No method for these types"
+                      (list op type-tags))))))))
