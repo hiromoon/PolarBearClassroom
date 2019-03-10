@@ -1102,3 +1102,125 @@ ubsets s) (if (null? s)
 ; 親ノードを引いた半分が左の木の要素数になるのでleft-sizeとして保存する
 ; partial-tree に要素とleft-sizeを渡して、左の部分木を作る(left-tree)
 ; (left)
+
+;practice2-65
+;union 和集合
+(define (union-set t1 t2)
+  (list->tree (union-set-list
+                (tree->list t1)
+                (tree->list t2))))
+
+;intersection 積集合
+(define (intersection-set t1 t2)
+  (list->tree (intersection-set-list
+                (tree->list t1)
+                (tree->list t2))))
+
+;practice2-66
+(define entry car)
+(define left-branch cadr)
+(define right-branch caddr)
+
+(define (lookup tree key)
+  (cond ((null? tree) #f)
+        ((= (entry tree) key) (entry tree))
+        ((> (entry tree) key) 
+         (lookup (left-branch tree) key))
+        (else (lookup (right-branch tree) key))))
+
+;practice2-67
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define symbol-leaf cadr)
+(define weight-leaf caddr)
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define left-branch car)
+(define right-branch cadr)
+(define (symbols tree)
+  (if (leaf? tree)
+    (list (symbol-leaf tree))
+    (caddr tree)))
+(define (weight tree)
+  (if (leaf? tree)
+    (weight-leaf tree)
+    (cadddr tree)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+      '()
+      (let ((next-branch
+              (choose-branch (car bits) current-branch)))
+        (if (leaf? next-branch)
+            (cons (symbol-leaf next-branch)
+                  (decode-1 (cdr bits) tree))
+            (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit: CHOOSE-BRANCH" bit))))
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                    (make-leaf 'B 2)
+                    (make-code-tree
+                      (make-leaf 'D 1)
+                      (make-leaf 'C 1)))))
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+;'(A D A B B C A)
+
+;practice2-68
+(define (encode message tree)
+  (if (null? message)
+    '()
+    (append (encode-symbol (car message) tree)
+            (encode (cdr message) tree))))
+
+(define (encode-symbol symbol tree)
+  (if (leaf? tree)
+    '()
+  (if (not (include? symbol (symbols tree)))
+    (error "bad symbol: ENCODE-SYMBOL: " symbol)
+    (if (include? symbol (symbols (left-branch tree)))
+      (append '(0) (encode-symbol symbol (left-branch tree)))
+      (append '(1) (encode-symbol symbol (right-branch tree)))))))
+
+(define (include? e li)
+  (cond ((null? li) #f)
+        ((eq? (car li) e) #t)
+        (else (include? e (cdr li)))))
+
+(encode '(A D A B B C A) sample-tree)
+
+;practice2-69
+(define (generate-huffman-tree pairs) 
+  (successive-merge (make-leaf-set pairs)))
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+    '()
+    (let ((pair (car pairs)))
+      (adjoin-set (make-leaf (car piar)
+                             (cadr pair))
+                  (make-leaf-set (cdr pairs))))))
+
+(define (adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set)
+                    (adjoin-set x (cdr set))))))
+
+(define (successive-merge leaf-set)
+  (if (null?  leaf-set))
+    (car leaf-set)
+    (make-code-tree
+      (succesive-merge (cdr leaf-set))
+      (car leaf-set)))
