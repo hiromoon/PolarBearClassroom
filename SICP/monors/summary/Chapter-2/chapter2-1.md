@@ -682,5 +682,108 @@ Leafの場合は、symbolの抽出を行う。
   (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
                      (- (angle z1) (angle z2))))
 ```
+#### 2.5.2 異なる型のデータを組み合わせる。
+２つのパッケージの値を足し合わせる場合、これまでに定義したパッケージでは不可能です。
+例えば、数値型に有理数を足し合わせる場合などです。
+そのような場合、下記のようにtagを設定することで対応が可能です。
+```lisp
+(define (add-complex-to-schemenum z x)
+  (make-from-real-image (+ (real-part z) x) (image-part z)))
+
+(put 'add '(complex scheme-number)
+  (lambda (z x) (tag (add-complex-to-schemenum z x))))
+```
+※ この手続きを宣言するには(scheme-number complex)に対応するものも宣言する必要があります。
+
+この方法でも手続きを宣言することは可能ですが、クロスタイプ演算を一つ定義するのにいくつものtagタイプに関して宣言をする必要が出てきて大変です。
+
+##### 強制型変換
+ある型のオブジェクトを他の型とみなる方法があることはよくあります。
+(例：numberはiが0のcomplexとどうとです。)
+
+```lisp
+(define (scheme-number->complex n)
+  (make-complex-from-real-imag (contents n) 0))
+```
+
+これらの強制型変換の手続きは、特別な強制型変換テーブルに組み込みます。
+このテーブルでは、２つのかたの名前をキーとして使います。
+
+```lisp
+(put-coercion 'scheme-number
+              'complex
+              scheme-nubmer->complex)
+```
+(このテーブルを操作するための手続き`put-coersion`と`get-coersion`が存在すると仮定します。)
+この後、`apply-generic`手続きに変更を加えることによって、強制型変換を統一的(generic)に扱える二様なります。
+
+下記の順番で`apply-generic`は手続きを試みます。
+1. 演算のディスパッチの実施
+2. 強制型変換の実施
+1が適用できなければ次の処理を行う形です。
+
+強制型変換が行えれば、再度１の演算を実施します。
+
+```lisp
+#lang racket
+(define (apply-generic op . args)
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if ((= length args) 2)
+              (let ((type1 (car type-tags))
+                    (type2 (cadr type-tags))
+                    (a1 (car args))
+                    (a2 (cadr args)))
+                (let ((t1->t2 (get-coercion type1 type2))
+                      (t2->t1 (get-coercion type2 type1)))
+                  (cond (t1->t2
+                         (apply-generic op (t1->t2 a1) a2))
+                        (t2->t1
+                         (apply-generic op t1 (t2->t1 a2)))
+                        (else (error "Not method for these types"
+                                     (list op type-tags))))
+                  (error "No method for these types"
+                         (list op type-tags)))))))))
+```
+このほうほうでは、対応出来ない方法もあります。
+例えば、第三の方に変更することで演算ができるというものです。
+このような場合は、型同士の関係のさらに深い構造を利用するシステムを構築する必要があります。
+これに関しては、次章検討します。
+
+##### 型の階層構造
+型が変換可能ということから、発展させると親と子の関係と考えることもできる。
+子の場合、サブタイプとスーパータイプという顔替え方が出てくる。
+このような構造はタワーとして構築可能です。
+
+このような場合、新たな型を追加する問題は簡単に解決できます。
+新しい型をすぐし上のスーパークラスに組み入れる方法と、新しい型がすぐ下の型のどのようなスーパークラスであるかを記述するだけでで十分だからです。
+
+例えば、整数->有理数->実数->複素数のタワー構造があった場合を考える。
+この場合、`複素数と整数の足し算を行いたい場合`これまでの方法ならば、
+`number->complex`をいう変換関数を定義していた。
+しかし、ツリー構造を１つづつ適応して変換することを行えばよい。
+1. 整数から有理数への変換を行う方法を定義する。
+2. 有理数から実数への変換を行う方法を定義する。
+3. 実数から複素数への変換を行う方法を定義する。
+4. スステムがこれらステップを通して整数を複素数に変換でくるようにする。
+
+`raise`という関数を用意して、想定の方になるまで変換を実施するようにする。
+
+また、タワー構造の利点は、**スーパータイプに定義された全ての演算を"継承する"という概念を簡単に実装できるところにある。**
+望んだ演算が自分の階層にない場合は階層を１つあげてその演算を適用します。
+
+加えて、タワー構造は適切なタイプまで下がることも可能です。
+これによって、6+0iを6と表現する事が可能となります。
+
+##### 階層の不適切さ
+システムのデータ型が自然にタワー構造になる場合は、ジェネリック演算が単純になります。
+
+一つの型が２つ以上のサブクラス、スーパークラスになるような場合、正しい型を見つけるまで`apply-generic`は複雑な検索をする必要があり、このような場合、階層構造を用いると非常に難しくなる。
+
+
+
+
 
 
