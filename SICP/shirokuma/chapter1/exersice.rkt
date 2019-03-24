@@ -946,4 +946,32 @@ f (f (. . . (f (x)) . . . )) である関数として定義できる。
 
 ; 一応のは満たしたが、いまいち不安。
 
+1.44
+
+#lang racket
+
+(define dx 0.0001)
+
+(define (n-smooth f n)
+  (repeated (smooth f) n))
+(define (smooth f) 
+  (lambda (x) 
+    (/ (+ (f (- x dx)) 
+          (f x) 
+          (f (+ x dx))) 
+        3)))
+(define (repeated f n)
+  (if (= n 1)
+      f
+      (repeated (compose f f) (- n 1))))
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+1.45
+
+2章に進みたいので、一旦スキップ。
+
+1.46
+
+2章に進みたいので、一旦スキップ。
 
