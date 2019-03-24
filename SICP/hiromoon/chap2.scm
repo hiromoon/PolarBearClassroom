@@ -1224,3 +1224,104 @@ ubsets s) (if (null? s)
     (make-code-tree
       (succesive-merge (cdr leaf-set))
       (car leaf-set)))
+
+;practice2-70
+(define huffman-tree
+  (generate-huffman-tree
+    (list
+      '(a 2)
+      '(Get 2)
+      '(Sha 3)
+      '(Wah 1)
+      '(boom 1)
+      '(job 2)
+      '(na 16)
+      '(yip 9))))
+(encode '(Get a job) huffman-tree) ;12bit
+(encode '(Sha na na na na na na na na) huffman-tree) ;62bit
+(encode '(Get a job) huffman-tree) ; 12bit
+(encode '(Sha na na na na na na na na) huffman-tree) ;62bit
+(encode '(Wah yip yip yip yip yip yip yip yip yip) huffman-tree) ;65bit
+(encode '(Sha boom) huffman-tree) ; 7bit
+
+;practice2-71
+; 2^n - 1 bit必要
+; お絵かきは省略
+
+;practice2-72
+;O(n * log n) ~ O(n^2) らしい(skip
+
+;practice2-73
+
+;a
+;実際の計算部分をジェネリックな式に移譲している
+;インタフェースを通してsymbolでアクセスするので実装の入れ替えができる
+;number? variable? は、移譲先を決定するために利用しているのでデータ手動にできない(?)
+
+;b
+(define install-add-package 
+  ; 定義類(ry
+  (define (tag x) (attach-tag '+))
+  (put 'derive '+ derive-sum)
+  (put 'derive '(+)
+       (lambda (x y) (tag (make-sum x y))))
+  'done)
+
+;c
+;bと大体一緒なのでスキップ
+
+;d
+;putする際のタグを入れ替える
+
+;practice2-74
+;a
+(define (attach-tag type-tag content) (cons type-tag content))
+(define (get-record employee-name file)
+  (attach-tag (division file) 
+              ((get 'get-record (division file)) employee-name file)))
+
+;b
+(define (get-salary record)
+  (let ((record-type (car record))
+        (record-content (cdr record)))
+    ((get 'get-salary record-type) record-content)))
+
+;c
+(define (find-employee-record employee-name file-list)
+  (if (null? file-list)
+    #f
+    (let ((file (car file-list))
+          (record (get-record employee-name file)))
+      (if (record)
+        record
+        (find-employee-record employee-name (cdr file-list))))))
+
+;d
+;新しい会社用の人事ファイル型を追加する必要がある
+;人事ファイル型には,get-recordとget-salaryメソッドを準備する
+
+;practice2-75
+(define (make-from-mag-ang x y)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) (* x (cos y)))
+          ((eq? op 'imag-part) (* x (sin y)))
+          ((eq? op 'magnitude) x)
+          ((eq? op 'angle) y)
+          (else error "Unknown op: MAKE-FROM-MAG-ANG" op)))
+  dispatch)
+
+;practice2-76
+;明示的ディスパッチによるジェネリック演算
+;  型を追加するたびに実装とディスパッチの処理を各演算に呼び出す演算を記述する
+;  演算を追加する時は、ディスパッチの処理を記述する
+
+;データ主導
+;  新しい型を実装する時には、実装とインストール処理を記述する必要がある
+;  新しい演算を追加する時には、同じく実装とインストール処理の記述が必要
+
+;メッセージパッシング
+;  新しい型を実装するたびにすべての実装が必要
+;  新しい演算を追加するためには、全ての型に演算を追加する必要がある
+
+;型を追加するのはメッセージパッシング(OOP)
+;演算を追加するのはデータ主導(FP)
