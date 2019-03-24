@@ -1102,3 +1102,226 @@ ubsets s) (if (null? s)
 ; 親ノードを引いた半分が左の木の要素数になるのでleft-sizeとして保存する
 ; partial-tree に要素とleft-sizeを渡して、左の部分木を作る(left-tree)
 ; (left)
+
+;practice2-65
+;union 和集合
+(define (union-set t1 t2)
+  (list->tree (union-set-list
+                (tree->list t1)
+                (tree->list t2))))
+
+;intersection 積集合
+(define (intersection-set t1 t2)
+  (list->tree (intersection-set-list
+                (tree->list t1)
+                (tree->list t2))))
+
+;practice2-66
+(define entry car)
+(define left-branch cadr)
+(define right-branch caddr)
+
+(define (lookup tree key)
+  (cond ((null? tree) #f)
+        ((= (entry tree) key) (entry tree))
+        ((> (entry tree) key) 
+         (lookup (left-branch tree) key))
+        (else (lookup (right-branch tree) key))))
+
+;practice2-67
+(define (make-leaf symbol weight) (list 'leaf symbol weight))
+(define (leaf? object) (eq? (car object) 'leaf))
+(define symbol-leaf cadr)
+(define weight-leaf caddr)
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define left-branch car)
+(define right-branch cadr)
+(define (symbols tree)
+  (if (leaf? tree)
+    (list (symbol-leaf tree))
+    (caddr tree)))
+(define (weight tree)
+  (if (leaf? tree)
+    (weight-leaf tree)
+    (cadddr tree)))
+
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+      '()
+      (let ((next-branch
+              (choose-branch (car bits) current-branch)))
+        (if (leaf? next-branch)
+            (cons (symbol-leaf next-branch)
+                  (decode-1 (cdr bits) tree))
+            (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit: CHOOSE-BRANCH" bit))))
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                    (make-leaf 'B 2)
+                    (make-code-tree
+                      (make-leaf 'D 1)
+                      (make-leaf 'C 1)))))
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+;'(A D A B B C A)
+
+;practice2-68
+(define (encode message tree)
+  (if (null? message)
+    '()
+    (append (encode-symbol (car message) tree)
+            (encode (cdr message) tree))))
+
+(define (encode-symbol symbol tree)
+  (if (leaf? tree)
+    '()
+  (if (not (include? symbol (symbols tree)))
+    (error "bad symbol: ENCODE-SYMBOL: " symbol)
+    (if (include? symbol (symbols (left-branch tree)))
+      (append '(0) (encode-symbol symbol (left-branch tree)))
+      (append '(1) (encode-symbol symbol (right-branch tree)))))))
+
+(define (include? e li)
+  (cond ((null? li) #f)
+        ((eq? (car li) e) #t)
+        (else (include? e (cdr li)))))
+
+(encode '(A D A B B C A) sample-tree)
+
+;practice2-69
+(define (generate-huffman-tree pairs) 
+  (successive-merge (make-leaf-set pairs)))
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+    '()
+    (let ((pair (car pairs)))
+      (adjoin-set (make-leaf (car piar)
+                             (cadr pair))
+                  (make-leaf-set (cdr pairs))))))
+
+(define (adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set)
+                    (adjoin-set x (cdr set))))))
+
+(define (successive-merge leaf-set)
+  (if (null?  leaf-set))
+    (car leaf-set)
+    (make-code-tree
+      (succesive-merge (cdr leaf-set))
+      (car leaf-set)))
+
+;practice2-70
+(define huffman-tree
+  (generate-huffman-tree
+    (list
+      '(a 2)
+      '(Get 2)
+      '(Sha 3)
+      '(Wah 1)
+      '(boom 1)
+      '(job 2)
+      '(na 16)
+      '(yip 9))))
+(encode '(Get a job) huffman-tree) ;12bit
+(encode '(Sha na na na na na na na na) huffman-tree) ;62bit
+(encode '(Get a job) huffman-tree) ; 12bit
+(encode '(Sha na na na na na na na na) huffman-tree) ;62bit
+(encode '(Wah yip yip yip yip yip yip yip yip yip) huffman-tree) ;65bit
+(encode '(Sha boom) huffman-tree) ; 7bit
+
+;practice2-71
+; 2^n - 1 bit必要
+; お絵かきは省略
+
+;practice2-72
+;O(n * log n) ~ O(n^2) らしい(skip
+
+;practice2-73
+
+;a
+;実際の計算部分をジェネリックな式に移譲している
+;インタフェースを通してsymbolでアクセスするので実装の入れ替えができる
+;number? variable? は、移譲先を決定するために利用しているのでデータ手動にできない(?)
+
+;b
+(define install-add-package 
+  ; 定義類(ry
+  (define (tag x) (attach-tag '+))
+  (put 'derive '+ derive-sum)
+  (put 'derive '(+)
+       (lambda (x y) (tag (make-sum x y))))
+  'done)
+
+;c
+;bと大体一緒なのでスキップ
+
+;d
+;putする際のタグを入れ替える
+
+;practice2-74
+;a
+(define (attach-tag type-tag content) (cons type-tag content))
+(define (get-record employee-name file)
+  (attach-tag (division file) 
+              ((get 'get-record (division file)) employee-name file)))
+
+;b
+(define (get-salary record)
+  (let ((record-type (car record))
+        (record-content (cdr record)))
+    ((get 'get-salary record-type) record-content)))
+
+;c
+(define (find-employee-record employee-name file-list)
+  (if (null? file-list)
+    #f
+    (let ((file (car file-list))
+          (record (get-record employee-name file)))
+      (if (record)
+        record
+        (find-employee-record employee-name (cdr file-list))))))
+
+;d
+;新しい会社用の人事ファイル型を追加する必要がある
+;人事ファイル型には,get-recordとget-salaryメソッドを準備する
+
+;practice2-75
+(define (make-from-mag-ang x y)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) (* x (cos y)))
+          ((eq? op 'imag-part) (* x (sin y)))
+          ((eq? op 'magnitude) x)
+          ((eq? op 'angle) y)
+          (else error "Unknown op: MAKE-FROM-MAG-ANG" op)))
+  dispatch)
+
+;practice2-76
+;明示的ディスパッチによるジェネリック演算
+;  型を追加するたびに実装とディスパッチの処理を各演算に呼び出す演算を記述する
+;  演算を追加する時は、ディスパッチの処理を記述する
+
+;データ主導
+;  新しい型を実装する時には、実装とインストール処理を記述する必要がある
+;  新しい演算を追加する時には、同じく実装とインストール処理の記述が必要
+
+;メッセージパッシング
+;  新しい型を実装するたびにすべての実装が必要
+;  新しい演算を追加するためには、全ての型に演算を追加する必要がある
+
+;型を追加するのはメッセージパッシング(OOP)
+;演算を追加するのはデータ主導(FP)
