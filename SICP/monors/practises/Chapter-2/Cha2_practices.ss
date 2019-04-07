@@ -3014,8 +3014,159 @@ decode-message
                   (cond (t1->t2
                           (apply-generic op (t1->t2 t1) t2))
                         (t2->t1
-                          (apply-generic op t1 (t2->t1) t1))
+                          (apply-generic op t1 (t2->t1 t1)))
                         (else error "No method for these types"
                               (list op type-tags)))))
                 (error "No method for these types"
                       (list op type-tags))))))))
+
+; 2.82
+(define (apply-generic op . args)
+  (define (iter type-tags args)
+    (if (null? type-tags)
+        (error "Not method for these type-ITER")
+        (let ((type1 (car type-tags)))
+          (let ((filtered-args (true-map (lambda (x)
+                                           (let ((type2 (type-tag x)
+                                                        x
+                                                        (let ((t2->t1 (get-coercion type2 type1)))
+                                                          (if (null? t2->t1) #f (t2->t1 x)))))))
+                               args))))
+          (or filtered-args
+              (iter (cdr type-tags) args)))))
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if (not (null? proc))
+          (apply proc (map contents args))
+          (apply apply-generic (cons op (iter type-targs args)))))))
+  
+(define (true-map prc sequence)
+  (define (true-map-iter proc sequence reuslt)
+    (if (null? squence)
+        (reverse result)
+        (let ((item (proc (car squence))))
+          (if item
+              (true-map prc (cdr sequence) (cons item result))
+              #f))))
+  (true-map-iter proc sequence '()))
+
+;; 必要な要素の考え方はあっていた。
+
+;; 2.83
+(define (raise x) (apply-generic 'raise x))
+
+(put 'raise 'integer (lambda (x)
+                       (make-rational x 1)))
+
+(put 'raise 'rational (lambda (x)
+                        (make-real (/ (numer x) (denom x)))))
+
+(put 'raise 'real (lambda (x)
+                    (make-from-real-image x 0))
+
+
+;; 2.84
+(define tower '(complex real rational integer))
+
+(define (upperType? upper lower tower)
+  (define (find-upper upper ls)
+    (define (iter x ls)
+      (cond ((null? ls) (error "lower type is not suppoerted."))
+            ((eq? x (car ls)) (cdr ls))
+            (else (iter x (cdr ls)))))
+    (iter upper ls))
+  
+  (define (find-lower lower ls)
+      (cond ((null? ls) #f)
+            ((eq? (car ls) lower) #t)
+            (else (find-lower lower (cdr ls)))))
+
+  (find-lower lower (find-upper upper tower)))
+
+(define (apply-generic op . args)
+  (let ((type-tags (map tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if (and (= (length args) 2)
+                   (not (equal? (car type-tags) (cadr type-tags))))
+              (let ((type1 (car type-tags))
+                    (type2 (cadr type-tags))
+                    (a1 (car args))
+                    (a2 (cadr args)))
+                (if (upperType? type1 type2)
+                    (apply-generic op a1 (raise a2))
+                    (apply-generic op (raise a1) a2))))))))
+
+;; test
+(upperType? 'complex 'real tower)
+(upperType? 'real 'complex tower)
+
+ (define (level type) 
+   (cond ((eq? type 'integer) 0) 
+         ((eq? type 'rational) 1) 
+         ((eq? type 'real) 2) 
+         ((eq? type 'complex) 3) 
+         (else (error "Invalid type: LEVEL" type)))) 
+
+;; 配列の中で一番大きいTypeを返す。 
+(define (highest-type args)
+  (if (null? (cdr args))
+      (car args)
+      (let ((left-level (level (car args)))
+            (right-level (highest-type (cdr args))))
+        (if (< left-level right-level)
+            (cadr args)
+            (car args)))))
+
+; typeとargsを引数にとり、全てのargsをtypeへ変換する。
+; 全て変換した場合はListを返すが、変換が失敗した場合はFalseを返す。
+(define (convert type args)
+  ;; arg(単数)をtypeへ変換する
+  (define (convert-arg type arg)
+    (let ((arg-tag (type-tag arg)))
+      (if (eq? type arg-tag)
+          arg
+          (let ((raise-fn (get 'raise arg-tag)))
+            (if raise-fn
+                (convert-arg type (raise-fn arg))
+                #f)))))
+
+  ;; args(list)をtypeに変換する。
+  (define (convert-iter type args reuslt)
+    (if (null? args) 
+        (reverse result)
+        (let ((conversion type (car arg)))
+          (if conversion 
+              (convert-iter type (cdr arg) (cons converion result))
+              #f))))
+
+  (convert-iter type args '()))
+
+(define (apply-generic op . args)
+  (define (not-method)
+    (error "No method for these type" (list op args)))
+
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if (not (null? (cdr args)))
+              (let ((highest-type-of-args (highest-type args)))
+                (convert highest-type-of-args args))
+              (not-method))
+          (not-method)))))
+
+;; 2.85
+;; パス
+
+
+;; 2.86
+;; パス
+
+
+
+
+
+
+
