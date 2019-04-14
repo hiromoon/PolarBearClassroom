@@ -1325,3 +1325,51 @@ ubsets s) (if (null? s)
 
 ;型を追加するのはメッセージパッシング(OOP)
 ;演算を追加するのはデータ主導(FP)
+
+;practice2-77
+;magnitudeがインタフェースとして外部へ公開されていないから
+;complex と rectanglerのmagnitudeを呼ぶので2回
+
+;practice2-78
+(define (attach-tag type-tag contents)
+  (if (number? contents)
+    contents
+    (cons type-tag contents)))
+(define (type-tag datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (car datum))
+        (else (error "Bad tagged datum: TYPE-TAG" datum))))
+(define (contents datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (cdr datum))
+        (else (error "Bad tagged datum: CONTENTS" datum))))
+
+;practice2-79
+(define (equ? x y)
+  (apply-generic 'equ? x y))
+
+(put 'equ? (scheme-number scheme-number) =)
+(put 'equ? (rational rational) 
+     (lambda (x y) 
+       (=
+         (* (denom x) (numer y))
+         (* (denom y) (numer x)))))
+
+(put 'equ? (complex complex) 
+     (lambda(x y)
+       (and
+         (= (real-part x) (real-part y))
+         (= (imag-part x) (imag-part y)))))
+
+;practice2-80
+(define (=zero? x)
+  (apply-generic '=zero? x))
+(put '=zero? (scheme-number schem-number) 
+     (lambda (x)
+       (= 0 x)))
+(put '=zero? (rational rational) 
+     (lambda (x)
+       (= 0 (numer x))))
+(put '=zero? (complex complex)
+     (lambda (x)
+       (= 0 (real-part x) (imag-part x))))
