@@ -1373,3 +1373,82 @@ ubsets s) (if (null? s)
 (put '=zero? (complex complex)
      (lambda (x)
        (= 0 (real-part x) (imag-part x))))
+
+;practice2-81
+;a
+;見つからない場合にも、複素数型にキャストしようとして無限ループになる
+
+
+;b
+;Louisのコードは動作しないし、apply-genericはそのままで正しい動作をするはず
+
+;c
+(define (attach-tag type-tag contents)
+  (if (number? contents)
+    contents
+    (cons type-tag contents)))
+(define (type-tag datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (car datum))
+        (else (error "Bad tagged datum: TYPE-TAG" datum))))
+(define (contents datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (cdr datum))
+        (else (error "Bad tagged datum: CONTENTS" datum))))
+
+(define (apply-generic op . args) 
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+        (apply proc (map contents args))
+        (if (= (length args) 2)
+          (let ((type1 (car type-tags))
+                (type2 (cadr type-tags))
+                (a1 (car args))
+                (a2 (cadr args)))
+            (if (equal? type1 type2) 
+              (error "No method for these types"
+                     (list op type-tags))
+              (let ((t1->t2 (get-coercion type1 type2))
+                    (t2-> t1 (get-coercion type2 type1)))
+                (cond (t1->t2
+                        (apply-generic op (t1->t2 a1) a2))
+                      (t2->t1
+                        (apply-generic op a1 (t2->t1 a2)))
+                      (else (error "No method for these types"
+                                   (list op type-tags)))))))
+          (error "No method for these types"
+                 (list op type-tags)))))))
+
+;practice2-82
+(define (true-map proc sequence)
+  (define (iter proc sequence acc)
+    (if (null? sequence) 
+      (reverse acc)
+      (let ((item (proc (car sequence))))
+        (if item
+          (iter proc (cdr sequence) (cons item acc))
+          #f))))
+  (iter proc sequence '()))
+(define (apply-generic op . args)
+  (define (iter type-tags args)
+    (if (null? type-tags)
+      (error "No method for these types")
+      (let ((type1 (car type-tags)))
+        (let ((filtered-args
+                (true-map (lambda (x)
+                            (let ((type2 (type-tag x)))
+                              (if (eq? type1 type2)
+                                x
+                                (let ((t2->t1 (get-coercion type2 type1)))
+                                  (if (null? t2->t1)
+                                    #f
+                                    (t2->t1 x))))))
+                          args)))
+          (or filtered-args 
+              (iter (cdr type-tags) args))))))
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if (not (null? proc))
+        (apply proc (map contents args))
+        (apply applygeneric (cons op (iter type-tags args)))))))
