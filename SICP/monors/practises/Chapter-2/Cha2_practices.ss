@@ -3164,9 +3164,36 @@ decode-message
 ;; 2.86
 ;; パス
 
+;; 2.87
+(define (=zero? x)
+  (cond ((pair? x) #f)
+        ((number?) (= 0 x))
+        (else (error "not allow type")))
+      
 
 
 
+;; 2.88
+(put 'negate 'scheme-number
+     (lambda (n) (- n)))
 
+(put 'negate 'rational
+     (lambda (rat) (make-rational (- (numer rat)) (denom rat))))
 
+(put 'negate 'complex
+     (lambda (com) (make-complex-from-real-imag 
+                     (- (real-part com)
+                        (image-part com)))))
 
+(define (negate-termlist l)
+  (if (empty-termlist? l)
+      the-empty-termlist
+      (let ((t (first-term termlist)))
+        (adjoin-term (make-term (order t) (negate (coeff t)))
+                     (negate-termlist (rest-list l))))))
+
+(put 'negate 'polynomial
+     (lambda (poly) (make-poly (variable poly) (negate-termlist (term-list poly)))))
+
+(put 'sub '(polynomial polynomial)
+     (lambda (x y) (add x (negate y))))
