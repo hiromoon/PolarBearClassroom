@@ -1373,3 +1373,147 @@ ubsets s) (if (null? s)
 (put '=zero? (complex complex)
      (lambda (x)
        (= 0 (real-part x) (imag-part x))))
+
+;practice2-81
+;a
+;見つからない場合にも、複素数型にキャストしようとして無限ループになる
+
+
+;b
+;Louisのコードは動作しないし、apply-genericはそのままで正しい動作をするはず
+
+;c
+(define (attach-tag type-tag contents)
+  (if (number? contents)
+    contents
+    (cons type-tag contents)))
+(define (type-tag datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (car datum))
+        (else (error "Bad tagged datum: TYPE-TAG" datum))))
+(define (contents datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (cdr datum))
+        (else (error "Bad tagged datum: CONTENTS" datum))))
+
+(define (apply-generic op . args) 
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+        (apply proc (map contents args))
+        (if (= (length args) 2)
+          (let ((type1 (car type-tags))
+                (type2 (cadr type-tags))
+                (a1 (car args))
+                (a2 (cadr args)))
+            (if (equal? type1 type2) 
+              (error "No method for these types"
+                     (list op type-tags))
+              (let ((t1->t2 (get-coercion type1 type2))
+                    (t2-> t1 (get-coercion type2 type1)))
+                (cond (t1->t2
+                        (apply-generic op (t1->t2 a1) a2))
+                      (t2->t1
+                        (apply-generic op a1 (t2->t1 a2)))
+                      (else (error "No method for these types"
+                                   (list op type-tags)))))))
+          (error "No method for these types"
+                 (list op type-tags)))))))
+
+;practice2-82
+(define (true-map proc sequence)
+  (define (iter proc sequence acc)
+    (if (null? sequence) 
+      (reverse acc)
+      (let ((item (proc (car sequence))))
+        (if item
+          (iter proc (cdr sequence) (cons item acc))
+          #f))))
+  (iter proc sequence '()))
+(define (apply-generic op . args)
+  (define (iter type-tags args)
+    (if (null? type-tags)
+      (error "No method for these types")
+      (let ((type1 (car type-tags)))
+        (let ((filtered-args
+                (true-map (lambda (x)
+                            (let ((type2 (type-tag x)))
+                              (if (eq? type1 type2)
+                                x
+                                (let ((t2->t1 (get-coercion type2 type1)))
+                                  (if (null? t2->t1)
+                                    #f
+                                    (t2->t1 x))))))
+                          args)))
+          (or filtered-args 
+              (iter (cdr type-tags) args))))))
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if (not (null? proc))
+        (apply proc (map contents args))
+        (apply apply-generic (cons op (iter type-tags args)))))))
+
+;practice2-83
+(define (raise x) (apply-generic 'raise x))
+
+(put 'raise 'integer
+     (lambda (x) (make-rational x 1)))
+(put 'raise 'rational
+     (lambda (x) (make-real (/ (numer x) (denom x)))))
+(put 'raise 'real
+     (lambda (x) (make-from-real-imag x 0)))
+;apply-genericがまだよくわかってない気がする
+
+;practice2-84
+(define (level type)
+  (cond ((eq? type 'integer) 0)
+        ((eq? type 'rational) 1)
+        ((eq? type 'real) 2)
+        ((eq? type 'complex) 3)
+        (else (error "Invaid type: LEVEL" type))))
+
+(define (highest-type args)
+  (if (null? (cdr args))
+    (type-tag (car args))
+    (let ((t1 (type-tag (car args)))
+          (t2 (highest-type (cdr args))))
+      (let ((l1 (level t1)) (l2 (level t2)))
+        (if (> l1 l2) t1 t2)))))
+(define (apply-generic op . args)
+  (let ((type-tags (map type-tag args)))
+    (define (no-method)
+      (error "No method for these types" (list op type-tags)))
+    (let ((proc (get op type-tags)))
+      (if proc
+        (apply proc (map contents args))
+        (if (not (null? (cdr args)))
+          (let ((raised-args (raise-to-common args)))
+            (if raised-args
+              (let ((proc (get op (map type-tag raised-args))))
+                (if proc
+                  (apply proc (map contents raised-args))
+                  (no-method)))
+              (no-method)))
+          (no-method))))))
+
+(define (raise-to-common args)
+  (let ((raised-args
+          (map (lambda (x) (raised-to-type (highest-type args) x))
+               args)))
+    (if (all-true? raised-args)
+      raised-args?
+      false)))
+
+(define (all-true? lst)
+  (cond ((null? lst) true)
+        ((car list) (all-true? (cdr lst)))
+        (else false)))
+
+(define (raise-to-type type item)
+  (let ((item-type (type-tag item)))
+    (if (eq? item-type type)
+      item
+      (let ((raise-fn (get 'raise item-type)))
+        (if raise-fn
+          (raise-to-type type (raise-fn item))
+          false)))))
