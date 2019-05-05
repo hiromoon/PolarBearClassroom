@@ -1,12 +1,15 @@
 #lang racket
 
-(define (last-pair items)
-  (define (iter items result)
-    (if (null? items)
-        result
-        (iter (cdr items) items)))
-  (iter items items))
+(define (my-last-pair list)
+  (if (null? (cdr list))
+      (car list)
+      (my-last-pair (cdr list))))
 
 ; test
-(last-pair (list 1))      ;1
-(last-pair (list 1 2 3))  ;3
+(define listA (list 23 72 149 34))
+(define listB (list 23 34))
+(define listC (list 34))
+
+(my-last-pair listA)  ; 34
+(my-last-pair listB)  ; 34
+(my-last-pair listC)  ; 34
