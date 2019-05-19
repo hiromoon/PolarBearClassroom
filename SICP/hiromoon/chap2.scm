@@ -1517,3 +1517,5 @@ ubsets s) (if (null? s)
         (if raise-fn
           (raise-to-type type (raise-fn item))
           false)))))
+
+; ここからすきっぷ
