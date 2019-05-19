@@ -39,13 +39,10 @@
                     coin-values))
                 coin-values)))))
 
-; TODO
 (define (first-denomination coin-values)
   (car coin-values))
-; TODO
 (define (except-first-denomination coin-values)
   (cdr coin-values))
-; TODO
 (define (no-more? coin-values)
   (null? coin-values))
 
