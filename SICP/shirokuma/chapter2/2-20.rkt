@@ -1,9 +1,9 @@
 #lang racket
 
-(define (same-parity x . list)
+(define (same-parity x . items)
   (if (even? x) 
-       (cons x (filter even? list))
-       (cons x (filter odd? list))))
+       (cons x (filter even? items))
+       (cons x (filter odd? items))))
 
 (define (filter func items)
   (let (( nil '() ))
