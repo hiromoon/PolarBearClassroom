@@ -263,8 +263,8 @@
 ;; 3. v, wの値として何が表示されるか。 
 ;; (d, c, b, a)
 
-;
-#lang racket
+; 3.16
+#lang sicp
 (define (count-pairs x)
   (if (not (pair? x))
       0
@@ -272,9 +272,49 @@
          (count-pairs (cdr x))
          1)))
 
+; first: count 3
+(define frt (list 'a 'b 'c))
+frt
+(count-pairs frt)
 
-(define x (list 'a 'b 'c))
-(count-pairs x)
+; second: count 4
+(define elem '(elm))
+(define x (cons elem elem))
 
-(define w (list (car x) (cdr x)))
-(count-pairs w)
+(define snd (list x))
+snd
+(count-pairs snd)
+
+; third: count 7
+(define third (cons x x))
+third
+(count-pairs third)
+
+; endless
+(define hoge (list 'a 'b 'c))
+(define endless (set-cdr! (cddr hoge) hoge))
+(count-pairs hoge) ; not return
+
+; 3.17
+#lang sicp
+
+(define (count-pairs x)
+  (let ((cache '()))
+    (define (uncounted? x)
+      (if (memq x cache)
+          0
+          (begin (set! cache (cons x cache))
+                 1)))
+    
+    (define (count x)
+      (if (not (pair? x))
+           0
+           (+ (count (car x))
+              (count (cdr x))
+              (uncounted? x))))
+  (count x)))
+
+ (define x '(foo)) 
+ (define y (cons x x)) 
+ (define str3 (cons y y)) 
+ (count-pairs str3) ; 7 
