@@ -318,3 +318,39 @@ third
  (define y (cons x x)) 
  (define str3 (cons y y)) 
  (count-pairs str3) ; 7 
+
+; 3.18
+#lang sicp
+(define (last-pair x)
+  (if (pair? x)
+      x
+      (last-pair (cdr x))))
+
+(define (make-cycle x)
+  (set-cdr! (last-pair x) x)
+  x)
+
+(define z (make-cycle (list 'a 'b 'c)))
+
+(define (is-cycle pair)
+  (let ((cache '()))
+        
+    (define (encounted? x)
+      (if (memq x cache)
+          #t
+          (begin (set! cache (cons x cache))
+                 #f)))
+    
+    (define (iter x)
+        (cond
+          ((null? x) #f)
+          ((encounted? x) #t)
+          (else (iter (cdr x)))))
+
+    (iter pair)))
+
+(is-cycle z) ;t
+(is-cycle (list 'a 'a 'a)) ;f
+(is-cycle (make-cycle (list 'a 'a 'a))) ;t
+
+; 3.19
