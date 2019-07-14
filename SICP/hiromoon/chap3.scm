@@ -153,3 +153,27 @@
           (set! num x)
           num)
         num)))
+
+;paractice3-9
+;paractice3-10
+;paractice3-11
+; 図を書く問題なのでスキップ
+
+;paractice3-12
+(define x (list 'a 'b))
+(define y (list 'c 'd))
+(define z (append x y))
+
+(cdr x) ; '(b)
+
+(define w (append! x y))
+
+(cdr x) ; '(b c d)
+
+;paractice3-13
+;循環参照になっているので無限ループになる
+
+;practice3-14
+;リストを逆順に並べ替える
+;v: '()
+;w: '(d c b a)
