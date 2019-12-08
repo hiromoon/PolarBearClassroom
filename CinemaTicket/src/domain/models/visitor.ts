@@ -3,6 +3,7 @@ import Gender from './gender';
 export const VisitorType = {
   general: 'general',
   member: 'member',
+  seniorMember: 'seniorMember',
   senior: 'senior',
   disabledPerson: 'disabledPerson',
   college: 'college',

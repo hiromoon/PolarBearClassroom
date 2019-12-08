@@ -1,3 +1,5 @@
-export default interface Discount {
-  value: number
-};
+export default class Discount {
+  constructor(public value: number) {
+    this.value = value;
+  }
+}

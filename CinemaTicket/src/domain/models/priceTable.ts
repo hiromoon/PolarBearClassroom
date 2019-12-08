@@ -4,8 +4,9 @@ type PriceList = {[key:string]: number}
 
 const MovieDayPriceTable: PriceList = {
   [VisitorType.general]: 1800,
-  [VisitorType.member]: 1000,
+  [VisitorType.member]: 1100,
   [VisitorType.senior]: 1100,
+  [VisitorType.seniorMember]: 1000,
   [VisitorType.disabledPerson]: 1000,
   [VisitorType.college]: 1500,
   [VisitorType.highSchoolStudent]: 1000,
@@ -16,6 +17,7 @@ const WorkdayCommon: PriceList = {
   [VisitorType.general]: 1800,
   [VisitorType.member]: 1000,
   [VisitorType.senior]: 1100,
+  [VisitorType.seniorMember]: 1000,
   [VisitorType.disabledPerson]: 1000,
   [VisitorType.college]: 1500,
   [VisitorType.highSchoolStudent]: 1000,
@@ -26,6 +28,7 @@ const WorkdayLateShow: PriceList = {
   [VisitorType.general]: 1800,
   [VisitorType.member]: 1000,
   [VisitorType.senior]: 1100,
+  [VisitorType.seniorMember]: 1000,
   [VisitorType.disabledPerson]: 1000,
   [VisitorType.college]: 1500,
   [VisitorType.highSchoolStudent]: 1000,
@@ -34,8 +37,9 @@ const WorkdayLateShow: PriceList = {
 };
 const HolidayCommon: PriceList = {
   [VisitorType.general]: 1800,
-  [VisitorType.member]: 1000,
+  [VisitorType.member]: 1300,
   [VisitorType.senior]: 1100,
+  [VisitorType.seniorMember]: 1000,
   [VisitorType.disabledPerson]: 1000,
   [VisitorType.college]: 1500,
   [VisitorType.highSchoolStudent]: 1000,
@@ -46,6 +50,7 @@ const HolidayLateShow: PriceList = {
   [VisitorType.general]: 1800,
   [VisitorType.member]: 1000,
   [VisitorType.senior]: 1100,
+  [VisitorType.seniorMember]: 1000,
   [VisitorType.disabledPerson]: 1000,
   [VisitorType.college]: 1500,
   [VisitorType.highSchoolStudent]: 1000,
@@ -53,18 +58,25 @@ const HolidayLateShow: PriceList = {
   [VisitorType.elementaryStudent]: 1000,
 };
 
+const MovieDay = 1;
+
+const SaturDay = 6;
+const SunDay = 0;
+
+const LateShowStartAt = 22;
+
 export default class PriceTable {
   // XXX: screeningTimeの命名が糞
   static get(screeningTime: Date) {
-    if (screeningTime.getDay() === 1) {
+    if (screeningTime.getDate() === MovieDay) {
       return MovieDayPriceTable;
     }
 
     // TODO: 祝日は後で考える
-    if (screeningTime.getDate() === 0 || screeningTime.getDate() === 6) {
-      return screeningTime.getHours() < 22 ? HolidayCommon : HolidayLateShow;
+    if (screeningTime.getDay() === SunDay || screeningTime.getDay() === SaturDay) {
+      return screeningTime.getHours() < LateShowStartAt ? HolidayCommon : HolidayLateShow;
     }
 
-    return screeningTime.getHours() < 22 ? WorkdayCommon : WorkdayLateShow;
+    return screeningTime.getHours() < LateShowStartAt ? WorkdayCommon : WorkdayLateShow;
   }
 }
