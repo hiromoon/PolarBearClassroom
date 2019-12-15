@@ -5,7 +5,7 @@ module.exports = {
   globals: {
     'ts-jest': {
       tsConfig: 'tsconfig.json',
-      diagnostics: false, 
+      diagnostics: false,
     },
   },
   transform: {
@@ -20,4 +20,6 @@ module.exports = {
     'json',
     'node',
   ],
+  preset: 'ts-jest',
+  testEnvironment: 'node',
 };
