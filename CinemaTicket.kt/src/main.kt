@@ -1,13 +1,17 @@
+import app.TicketPriceCalculationService
+import domain.models.*
+import java.time.LocalDateTime
+
 fun main(args : Array<String>) {
     println("Hello Kotlin!!")
-    val visitor = new Visitor('0', age, gender, visitorType)
-    val movieRepository = new MovieRepository()
-    val screeningTime = new DateTime()
+    val visitor = Visitor("0", 27, Gender.Male, VisitorType.General)
+    val movieRepository = MovieRepository()
+    val screeningTime = LocalDateTime.now()
 
-    val ticketPriceCalculationService = new TicketPriceCalculationService(movieRepository)
+    val ticketPriceCalculationService = TicketPriceCalculationService(movieRepository)
 
-    val discount = new Discount(0)
-    val price = ticketPriceCalculationService.caculate(visitor, discount, movieId, screeningTime)
+    val discount = Discount(0)
+    val price = ticketPriceCalculationService.calculate(visitor, discount, 1, screeningTime)
 
     println("Price: $price")
 }

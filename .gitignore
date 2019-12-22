@@ -1,2 +1,6 @@
-.DS_Store
-SICP/.DS_Store
+node_modules
+src/**/*.js
+bin
+out
+.*
+

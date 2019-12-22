@@ -65,7 +65,7 @@ class PriceTable() {
         )
 
         val HolidayLateShow = PriceList(
-            mapOf<VisitorType, Int>(
+            mapOf(
                 VisitorType.General to 1800,
                 VisitorType.Member to 1000,
                 VisitorType.Senior to 1100,
@@ -91,4 +91,8 @@ class PriceTable() {
     }
 }
 
-class PriceList(val priceList: Map<VisitorType, Int>)
+class PriceList(private val priceList: Map<VisitorType, Int>) {
+    fun get(visitorType: VisitorType): Int {
+        return this.priceList[visitorType]!!;
+    }
+}
