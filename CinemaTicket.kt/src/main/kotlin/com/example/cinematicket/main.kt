@@ -3,7 +3,6 @@ import domain.models.*
 import java.time.LocalDateTime
 
 fun main(args : Array<String>) {
-    println("Hello Kotlin!!")
     val visitor = Visitor("0", 27, Gender.Male, VisitorType.General)
     val movieRepository = MovieRepository()
     val screeningTime = LocalDateTime.now()
