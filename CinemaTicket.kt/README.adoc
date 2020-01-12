@@ -1,0 +1,12 @@
+= 映画料金計算モデリング
+
+== 題材
+
+* シネマシチズンの映画料金を計算するモデルを作成、実装する。
+** https://cinemacity.co.jp/ticket/
+* 元ネタ
+** https://togetter.com/li/1378684
+
+== 現在のモデル
+
+image::ticket-calculation.png[] 

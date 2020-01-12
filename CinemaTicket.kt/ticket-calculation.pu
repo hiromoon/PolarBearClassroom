@@ -1,0 +1,46 @@
+@startuml
+
+enum VisitorType {
+  general
+  member
+  senior
+  disabledPerson
+  collegeStudent
+  highSchoolStudent
+  juniorHighSchoolStudent
+  elementaryStudent
+}
+
+class Visitor {
+  -id
+  -age
+  -gender
+  -VisitorType type
+}
+
+class Movie {
+  +title
+  +is3DTitle()
+}
+
+class Calculator {
+  +calc(Movie movie, Visitor visitor, Discount discount)
+}
+
+class PriceTable {
+
+}
+class Price {
+}
+
+class Discount {
+
+}
+
+VisitorType <|.. Visitor
+Visitor <|.. Calculator
+Discount <|.. Calculator
+Price <|.. PriceTable
+PriceTable <|.. Calculator
+Movie <|.. Calculator
+@enduml
