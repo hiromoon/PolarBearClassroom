@@ -5,7 +5,7 @@ import { VisitorType, Visitor } from './src/domain/models/visitor';
 import MovieRepository from './src/domain/repositories/movieRepository';
 import TicketPriceCalculationService from './src/app/TicketPriceCalculationService';
 
-const main = (age, gender, visitorType, movieId) => {
+const main = (age: number, gender: Gender, visitorType: string, movieId: number) => {
   const visitor = new Visitor('0', age, gender, visitorType);
 
   const movieRepository = new MovieRepository();
@@ -22,11 +22,11 @@ const main = (age, gender, visitorType, movieId) => {
   return price;
 };
 
-// const age = 25;
-// const gender = Gender.male;
-// const visitorType = VisitorType.member;
-// const movieId = 1;
-//
-// main(age, gender, visitorType, movieId);
+const age = 25;
+const gender = Gender.male;
+const visitorType = VisitorType.member;
+const movieId = 1;
 
-export default main;
+console.log(main(age, gender, visitorType, movieId));
+
+// export default main;
