@@ -3,7 +3,6 @@ package domain.models
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 
-
 class PriceTable() {
     companion object {
         const val MOVIE_DAY = 1
@@ -94,6 +93,6 @@ class PriceTable() {
 
 class PriceList(private val priceList: Map<VisitorType, Int>) {
     fun get(visitorType: VisitorType): Int {
-        return this.priceList[visitorType]!!;
+        return this.priceList[visitorType]!!
     }
 }

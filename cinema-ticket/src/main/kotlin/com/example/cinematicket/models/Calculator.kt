@@ -6,6 +6,3 @@ fun calc(movie: Movie, visitor: Visitor, priceList: PriceList, discount: Discoun
     price += if (movie.is3DTitle()) 400 else 0
     return price
 }
-
-
-

@@ -1,13 +1,12 @@
 package com.example.cinematicket.app
 
 import app.TicketPriceCalculationService
-import domain.models.*
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
+import domain.models.Discount
+import domain.models.MovieRepository
+import domain.models.Visitor
 import java.time.LocalDateTime
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 /**
  * TicketPriceCalculationService のテスト

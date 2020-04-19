@@ -12,7 +12,7 @@ class MovieRepository {
         )
     }
 
-    fun get(id :Int ) :Movie{
-        return movies[id];
+    fun get(id: Int): Movie {
+        return movies[id]
     }
 }

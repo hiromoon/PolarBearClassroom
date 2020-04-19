@@ -16,5 +16,4 @@ enum class VisitorType {
     ElementaryStudent
 }
 
-public class Visitor(var id: String, var age: Int, var gender: Gender, var visitorType: VisitorType) {
-}
+public class Visitor(var id: String, var age: Int, var gender: Gender, var visitorType: VisitorType)
