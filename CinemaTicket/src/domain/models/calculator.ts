@@ -1,4 +1,4 @@
-import { Movie } from './movie';
+import Movie from './movie';
 import { Visitor } from './visitor';
 import { PriceList } from './priceTable';
 import Discount from './discount';
