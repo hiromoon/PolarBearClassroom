@@ -1,6 +1,6 @@
 import { VisitorType } from './visitor';
 
-type PriceList = {[key: string]: number}
+export type PriceList = {[key: string]: number}
 
 const MovieDayPriceTable: PriceList = {
   [VisitorType.general]: 1800,

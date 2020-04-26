@@ -13,8 +13,8 @@ export default class TicketPriceCalculationService {
 
   calculate(visitor: Visitor, discount: Discount, movieId: number, screeningTime: Date): number {
     const movie = this.movieRepository.get(movieId);
-    const priceTable = PriceTable.get(screeningTime);
-    const price = Calculator.calc(movie, visitor, priceTable, discount);
+    const priceList = PriceTable.get(screeningTime);
+    const price = Calculator.calc(movie, visitor, priceList, discount);
     return price;
   }
 }
