@@ -1,6 +1,6 @@
 import { VisitorType } from './visitor';
 
-type PriceList = {[key:string]: number}
+type PriceList = {[key: string]: number}
 
 const MovieDayPriceTable: PriceList = {
   [VisitorType.general]: 1800,
@@ -67,7 +67,7 @@ const LateShowStartAt = 22;
 
 export default class PriceTable {
   // XXX: screeningTimeの命名が糞
-  static get(screeningTime: Date) {
+  static get(screeningTime: Date): PriceList {
     if (screeningTime.getDate() === MovieDay) {
       return MovieDayPriceTable;
     }

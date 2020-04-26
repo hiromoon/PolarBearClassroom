@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Movie } from '.';
+import Movie from '.';
 
 describe('Movie', () => {
   describe('#is3DTitle', () => {

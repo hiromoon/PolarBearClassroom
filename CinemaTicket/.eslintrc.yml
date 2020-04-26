@@ -4,6 +4,7 @@ env:
   mocha: true
 extends:
   - airbnb-base
+  - "plugin:@typescript-eslint/recommended"
 globals:
   Atomics: readonly
   SharedArrayBuffer: readonly
@@ -13,3 +14,9 @@ parserOptions:
   sourceType: module
 plugins:
   - '@typescript-eslint'
+rules: 
+  "import/extensions":
+    - error
+    - never
+  "import/no-unresolved": off
+  "import/no-extraneous-dependencies": off

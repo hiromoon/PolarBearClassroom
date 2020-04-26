@@ -13,7 +13,7 @@ export const VisitorType = {
 };
 
 export class Visitor {
-    private id:string
+    private id: string
 
     public age: number
 
@@ -22,7 +22,7 @@ export class Visitor {
     public visitorType: string
 
     constructor(
-      id:string,
+      id: string,
       age: number,
       gender: Gender,
       visitorType: string,
