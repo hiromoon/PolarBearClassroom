@@ -1,5 +1,7 @@
-export default class Movie {
+export class Movie {
   constructor(public title: string, private is3D: boolean) {
+    this.title = title;
+    this.is3D = is3D;
   }
 
   is3DTitle(): boolean {

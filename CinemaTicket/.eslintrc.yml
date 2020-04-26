@@ -1,6 +1,7 @@
 env:
   browser: true
   es6: true
+  mocha: true
 extends:
   - airbnb-base
 globals:
@@ -12,4 +13,3 @@ parserOptions:
   sourceType: module
 plugins:
   - '@typescript-eslint'
-rules: {}
