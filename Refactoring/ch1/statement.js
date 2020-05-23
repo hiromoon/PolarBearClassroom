@@ -45,27 +45,4 @@ function statement(invoice, plays) {
         return plays[aPerformance.playID];
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 module.exports = statement;
