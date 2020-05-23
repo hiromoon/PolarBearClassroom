@@ -32,7 +32,7 @@ const expected = `Statement for BigCo
  Othello: $500.00 (40 seats)
 Amount owed is $1,730.00
 You earned 47 credits 
-`
+`;
 
 test('regression test', () => {
     expect(statement(invoices[0], plays)).toBe(expected);
