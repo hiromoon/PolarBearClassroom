@@ -5,6 +5,8 @@ function statement(invoice, plays) {
 
     for (const perf of invoice.performances) {
         volumeCredits += volumeCreditsFor(perf);
+    }
+    for (const perf of invoice.performances) {
         // 注文の内容を出力
         result += ` ${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
         totalAmount += amountFor(perf)
