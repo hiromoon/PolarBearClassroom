@@ -1,4 +1,8 @@
 function statement(invoice, plays) {
+    return renderPlainText(invoice, plays);
+}
+
+function renderPlainText(invoice, plays) {
     let result = `Statement for ${invoice.customer}\n`;
 
     for (const perf of invoice.performances) {
@@ -64,6 +68,6 @@ function statement(invoice, plays) {
 
     function usd(aNumber) {
         return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(aNumber / 100);
-    }
+    }    
 }
 module.exports = statement;
