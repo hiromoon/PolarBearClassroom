@@ -1,15 +1,12 @@
 function statement(invoice, plays) {
     let result = `Statement for ${invoice.customer}\n`;
 
-    let totalAmount = hoge();
-    let volumeCredits = totalVolumeCredits();
-
     for (const perf of invoice.performances) {
         // 注文の内容を出力
         result += ` ${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
     }
 
-    result += `Amount owed is ${usd(totalAmount)}\n`;
+    result += `Amount owed is ${usd(totalAmount())}\n`;
     result += `You earned ${totalVolumeCredits()} credits \n`;
     return result;
 
@@ -45,7 +42,7 @@ function statement(invoice, plays) {
         return result;
     }
 
-    function hoge() {
+    function totalAmount() {
         let totalAmount = 0;
         for (const perf of invoice.performances) {
             totalAmount += amountFor(perf)
