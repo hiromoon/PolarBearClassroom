@@ -1,12 +1,8 @@
 function statement(invoice, plays) {
     let result = `Statement for ${invoice.customer}\n`;
 
+    let totalAmount = hoge();
     let volumeCredits = totalVolumeCredits();
-    
-    let totalAmount = 0;
-    for (const perf of invoice.performances) {
-        totalAmount += amountFor(perf)
-    }
 
     for (const perf of invoice.performances) {
         // 注文の内容を出力
@@ -47,6 +43,14 @@ function statement(invoice, plays) {
         // 喜劇のときは10人につき、さらにポイントを加算
         if ("comedy" === playFor(aPerformance).type) { result += Math.floor(aPerformance.audience / 5); }
         return result;
+    }
+
+    function hoge() {
+        let totalAmount = 0;
+        for (const perf of invoice.performances) {
+            totalAmount += amountFor(perf)
+        }
+        return totalAmount;
     }
 
     function totalVolumeCredits() {
