@@ -1,9 +1,9 @@
 function statement(invoice, plays) {
-    let totalAmount = 0;
     let result = `Statement for ${invoice.customer}\n`;
 
     let volumeCredits = totalVolumeCredits();
     
+    let totalAmount = 0;
     for (const perf of invoice.performances) {
         totalAmount += amountFor(perf)
     }
