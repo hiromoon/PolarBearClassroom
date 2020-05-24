@@ -11,7 +11,7 @@ function statement(invoice, plays) {
     }
 
     result += `Amount owed is ${usd(totalAmount)}\n`;
-    result += `You earned ${volumeCredits} credits \n`;
+    result += `You earned ${totalVolumeCredits()} credits \n`;
     return result;
 
     function amountFor(aPerformance) {
