@@ -1,8 +1,18 @@
 function statement(invoice, plays) {
     const statementData = {};
     statementData.customer = invoice.customer;
-    statementData.performances = invoice.performances;
+    statementData.performances = invoice.performances.map(enrichPerformance);
     return renderPlainText(statementData, plays);
+
+    function enrichPerformance(aPerformance) {
+        const result = Object.assign({}, aPerformance);
+        result.play =  playFor(aPerformance); 
+        return result;
+    }
+
+    function playFor(aPerformance) {
+        return plays[aPerformance.playID];
+    }
 }
 
 function renderPlainText(data, plays) {
@@ -10,7 +20,7 @@ function renderPlainText(data, plays) {
 
     for (const perf of data.performances) {
         // 注文の内容を出力
-        result += ` ${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
+        result += ` ${perf.play.name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
     }
 
     result += `Amount owed is ${usd(totalAmount())}\n`;
@@ -19,7 +29,7 @@ function renderPlainText(data, plays) {
 
     function amountFor(aPerformance) {
         let result = 0;
-        switch (playFor(aPerformance).type) {
+        switch (aPerformance.play.type) {
             case "tragedy":
                 result = 40000;
                 if (aPerformance.audience > 30) {
@@ -45,7 +55,7 @@ function renderPlainText(data, plays) {
         // ボリューム特典のポイントを加算
         result += Math.max(aPerformance.audience - 30, 0);
         // 喜劇のときは10人につき、さらにポイントを加算
-        if ("comedy" === playFor(aPerformance).type) { result += Math.floor(aPerformance.audience / 5); }
+        if ("comedy" === aPerformance.play.type) { result += Math.floor(aPerformance.audience / 5); }
         return result;
     }
 
@@ -63,10 +73,6 @@ function renderPlainText(data, plays) {
             volumeCredits += volumeCreditsFor(perf);
         }
         return volumeCredits;
-    }
-
-    function playFor(aPerformance) {
-        return plays[aPerformance.playID];
     }
 
     function usd(aNumber) {
