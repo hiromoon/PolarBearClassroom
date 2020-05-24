@@ -3,11 +3,12 @@ function statement(invoice, plays) {
     statementData.customer = invoice.customer;
     statementData.performances = invoice.performances.map(enrichPerformance);
     statementData.totalAmount = totalAmount(statementData);
+    statementData.totalVolumeCredits = totalVolumeCredits(statementData);
     return renderPlainText(statementData, plays);
 
     function enrichPerformance(aPerformance) {
         const result = Object.assign({}, aPerformance);
-        // TODO オブジェクト渡してない? copy必要なのでは?
+        // TODO オブジェクト渡してない? copyした方が良いのでは?
         result.play =  playFor(result); 
         result.amount = amountFor(result);
         result.volumeCredits = volumeCreditsFor(result);
@@ -57,6 +58,15 @@ function statement(invoice, plays) {
         if ("comedy" === aPerformance.play.type) { result += Math.floor(aPerformance.audience / 5); }
         return result;
     }
+
+    function totalVolumeCredits(data) {
+        let volumeCredits = 0;
+        for (const perf of data.performances) {
+            volumeCredits += perf.volumeCredits;
+        }
+        return volumeCredits;
+    }
+
 }
 
 function renderPlainText(data) {
@@ -68,16 +78,8 @@ function renderPlainText(data) {
     }
 
     result += `Amount owed is ${usd(data.totalAmount)}\n`;
-    result += `You earned ${totalVolumeCredits()} credits \n`;
+    result += `You earned ${data.totalVolumeCredits} credits \n`;
     return result; 
-
-    function totalVolumeCredits() {
-        let volumeCredits = 0;
-        for (const perf of data.performances) {
-            volumeCredits += perf.volumeCredits;
-        }
-        return volumeCredits;
-    }
 
     function usd(aNumber) {
         return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(aNumber / 100);
