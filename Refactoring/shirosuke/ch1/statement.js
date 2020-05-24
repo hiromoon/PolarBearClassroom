@@ -10,6 +10,7 @@ function statement(invoice, plays) {
         // TODO オブジェクト渡してない? copy必要なのでは?
         result.play =  playFor(result); 
         result.amount = amountFor(result);
+        result.volumeCredits = volumeCreditsFor(result);
         return result;
     }
 
@@ -47,6 +48,15 @@ function statement(invoice, plays) {
         }
         return totalAmount;
     }
+
+    function volumeCreditsFor(aPerformance) {
+        let result = 0;
+        // ボリューム特典のポイントを加算
+        result += Math.max(aPerformance.audience - 30, 0);
+        // 喜劇のときは10人につき、さらにポイントを加算
+        if ("comedy" === aPerformance.play.type) { result += Math.floor(aPerformance.audience / 5); }
+        return result;
+    }
 }
 
 function renderPlainText(data) {
@@ -59,21 +69,12 @@ function renderPlainText(data) {
 
     result += `Amount owed is ${usd(data.totalAmount)}\n`;
     result += `You earned ${totalVolumeCredits()} credits \n`;
-    return result;
-
-    function volumeCreditsFor(aPerformance) {
-        let result = 0;
-        // ボリューム特典のポイントを加算
-        result += Math.max(aPerformance.audience - 30, 0);
-        // 喜劇のときは10人につき、さらにポイントを加算
-        if ("comedy" === aPerformance.play.type) { result += Math.floor(aPerformance.audience / 5); }
-        return result;
-    }
+    return result; 
 
     function totalVolumeCredits() {
         let volumeCredits = 0;
         for (const perf of data.performances) {
-            volumeCredits += volumeCreditsFor(perf);
+            volumeCredits += perf.volumeCredits;
         }
         return volumeCredits;
     }
