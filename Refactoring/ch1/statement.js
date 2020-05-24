@@ -3,8 +3,6 @@ function statement(invoice, plays) {
     let volumeCredits = 0;
     let result = `Statement for ${invoice.customer}\n`;
 
-    const format = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format;
-
     for (const perf of invoice.performances) {
         volumeCredits += volumeCreditsFor(perf);
         // 注文の内容を出力
@@ -50,6 +48,10 @@ function statement(invoice, plays) {
 
     function playFor(aPerformance) {
         return plays[aPerformance.playID];
+    }
+
+    function format(aNumber) {
+        return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(aNumber);
     }
 }
 module.exports = statement;
