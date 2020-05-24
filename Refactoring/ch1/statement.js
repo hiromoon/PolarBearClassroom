@@ -6,11 +6,11 @@ function statement(invoice, plays) {
     for (const perf of invoice.performances) {
         volumeCredits += volumeCreditsFor(perf);
         // 注文の内容を出力
-        result += ` ${playFor(perf).name}: ${format(amountFor(perf) / 100)} (${perf.audience} seats)\n`;
+        result += ` ${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
         totalAmount += amountFor(perf)
     }
 
-    result += `Amount owed is ${format(totalAmount / 100)}\n`;
+    result += `Amount owed is ${usd(totalAmount)}\n`;
     result += `You earned ${volumeCredits} credits \n`;
     return result;
 
@@ -50,8 +50,8 @@ function statement(invoice, plays) {
         return plays[aPerformance.playID];
     }
 
-    function format(aNumber) {
-        return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(aNumber);
+    function usd(aNumber) {
+        return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(aNumber / 100);
     }
 }
 module.exports = statement;
