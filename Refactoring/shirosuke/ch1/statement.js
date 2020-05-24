@@ -6,26 +6,15 @@ function statement(invoice, plays) {
 
     function enrichPerformance(aPerformance) {
         const result = Object.assign({}, aPerformance);
-        result.play =  playFor(aPerformance); 
+        // TODO オブジェクト渡してない? copy必要なのでは?
+        result.play =  playFor(result); 
+        result.amount = amountFor(result);
         return result;
     }
 
     function playFor(aPerformance) {
         return plays[aPerformance.playID];
     }
-}
-
-function renderPlainText(data, plays) {
-    let result = `Statement for ${data.customer}\n`;
-
-    for (const perf of data.performances) {
-        // 注文の内容を出力
-        result += ` ${perf.play.name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
-    }
-
-    result += `Amount owed is ${usd(totalAmount())}\n`;
-    result += `You earned ${totalVolumeCredits()} credits \n`;
-    return result;
 
     function amountFor(aPerformance) {
         let result = 0;
@@ -49,6 +38,21 @@ function renderPlainText(data, plays) {
         }
         return result;
     }
+}
+
+function renderPlainText(data) {
+    let result = `Statement for ${data.customer}\n`;
+
+    for (const perf of data.performances) {
+        // 注文の内容を出力
+        result += ` ${perf.play.name}: ${usd(perf.amount)} (${perf.audience} seats)\n`;
+    }
+
+    result += `Amount owed is ${usd(totalAmount())}\n`;
+    result += `You earned ${totalVolumeCredits()} credits \n`;
+    return result;
+
+
 
     function volumeCreditsFor(aPerformance) {
         let result = 0;
@@ -62,7 +66,7 @@ function renderPlainText(data, plays) {
     function totalAmount() {
         let totalAmount = 0;
         for (const perf of data.performances) {
-            totalAmount += amountFor(perf)
+            totalAmount += perf.amount
         }
         return totalAmount;
     }
