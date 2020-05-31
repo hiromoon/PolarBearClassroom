@@ -26,10 +26,10 @@ module.exports = function statement(invoice, plays) {
     return result;
   }
 
-  function volumeCreditsFor(perf) {
+  function volumeCreditsFor(aPerformance) {
     let volumeCredits = 0;
-    volumeCredits += Math.max(perf.audience - 30, 0);
-    if (playFor(perf).type === 'comedy') volumeCredits += Math.floor(perf.audience / 5);
+    volumeCredits += Math.max(aPerformance.audience - 30, 0);
+    if (playFor(aPerformance).type === 'comedy') volumeCredits += Math.floor(aPerformance.audience / 5);
     return volumeCredits;
   }
 
