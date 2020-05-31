@@ -37,12 +37,11 @@ module.exports = function statement(invoice, plays) {
   });
 
   for (const perf of invoice.performances) {
-    const play = playFor(perf);
-    const thisAmount = amountFor(perf, play);
+    const thisAmount = amountFor(perf, playFor(perf));
 
     volumeCredits += Math.max(perf.audience - 30, 0);
-    if (play.type === 'comedy') volumeCredits += Math.floor(perf.audience / 5);
-    result += `${play.name}: ${format(thisAmount / 100)} (${perf.audience} seats)\n`;
+    if (playFor(perf).type === 'comedy') volumeCredits += Math.floor(perf.audience / 5);
+    result += `${playFor(perf).name}: ${format(thisAmount / 100)} (${perf.audience} seats)\n`;
     totalAmount += thisAmount;
   }
   result += `Amount owed is ${format(totalAmount / 100)}\n`;
