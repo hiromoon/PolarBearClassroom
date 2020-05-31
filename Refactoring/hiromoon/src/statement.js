@@ -22,6 +22,10 @@ function amountFor(aPerformance, play) {
 }
 
 module.exports = function statement(invoice, plays) {
+  function playFor(aPerformance) {
+    return plays[aPerformance.playID];
+  }
+
   let totalAmount = 0;
   let volumeCredits = 0;
   let result = `Statement for ${invoice.customer}\n`;
@@ -33,7 +37,7 @@ module.exports = function statement(invoice, plays) {
   });
 
   for (const perf of invoice.performances) {
-    const play = plays[perf.playID];
+    const play = playFor(perf);
     const thisAmount = amountFor(perf, play);
 
     volumeCredits += Math.max(perf.audience - 30, 0);
