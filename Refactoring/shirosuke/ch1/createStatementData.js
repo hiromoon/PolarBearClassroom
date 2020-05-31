@@ -68,6 +68,28 @@ class PerformanceCalculator {
         this.performance = aPerformance;
         this.play = aPlay;
     }
+    amountFor() {
+        let result = 0;
+        switch (this.performance.play.type) {
+            case "tragedy":
+                result = 40000;
+                if (this.performance.audience > 30) {
+                    result += 1000 * (this.performance.audience - 30);
+                }
+                break;
+            case "comedy":
+                result = 30000;
+                if (this.performance.audience > 20) {
+                    result += 10000 + 500 * (this.performance.audience - 20);
+                }
+                result += 300 * this.performance.audience;
+                break;
+            default:
+                // FIXME ここ通ったらバグる
+                throw new Error(`unknown type: ${play.type}`);
+        }
+        return result;
+    }
 }
 
 module.exports = createStatementData;
