@@ -12,7 +12,7 @@ function createStatementData(invoice, plays) {
         // TODO オブジェクト渡してない? copyした方が良いのでは?
         result.play = calculator.play;
         result.amount = calculator.amount;
-        result.volumeCredits = volumeCreditsFor(result);
+        result.volumeCredits = calculator.volumeCredits;
         return result;
     }
 
@@ -34,15 +34,6 @@ function createStatementData(invoice, plays) {
             .reduce((total, p) => total + p.amount, 0);
     }
 
-    function volumeCreditsFor(aPerformance) {
-        let result = 0;
-        // ボリューム特典のポイントを加算
-        result += Math.max(aPerformance.audience - 30, 0);
-        // 喜劇のときは10人につき、さらにポイントを加算
-        if ("comedy" === aPerformance.play.type) { result += Math.floor(aPerformance.audience / 5); }
-        return result;
-    }
-
     function totalVolumeCredits(data) {
         return data.performances
             .reduce((total, p) => total + p.volumeCredits, 0);
@@ -54,8 +45,14 @@ class PerformanceCalculator {
         this.performance = aPerformance;
         this.play = aPlay;
     }
-    amountFor() {
+    get amountFor() {
         throw Error("サブクラスの責務");
+    }
+
+    get volumeCredits() {
+        let result = 0;
+        result += Math.max(this.performance.audience - 30, 0);
+        return result;
     }
 }
 
@@ -77,6 +74,10 @@ class ComedyCalculator extends PerformanceCalculator {
         }
         result += 300 * this.performance.audience;
         return result;
+    }
+
+    get volumeCredits() {
+        return super.volumeCredits + Math.floor(this.performance.audience / 5);
     }
 }
 
