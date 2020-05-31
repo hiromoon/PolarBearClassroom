@@ -25,12 +25,11 @@ You earned 47 credits
       expect(statement(invoices[0], plays)).to.equal(expected);
     });
   });
-
-  describe('.amountFor', () => {
-    it('should be amount for hamlet', () => {
-      const perf = invoices[0].performances[0];
-      const play = plays.hamlet;
-      expect(amountFor(perf, play)).to.equal(65000);
-    });
-  });
+  // describe('.amountFor', () => {
+  //  it('should be amount for hamlet', () => {
+  //    const perf = invoices[0].performances[0];
+  //    const play = plays.hamlet;
+  //    expect(amountFor(perf, play)).to.equal(65000);
+  //  });
+  // });
 });
