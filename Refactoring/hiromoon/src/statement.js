@@ -41,16 +41,19 @@ module.exports = function statement(invoice, plays) {
     }).format(aNumber / 100);
   }
 
-  let volumeCredits = 0;
   let totalAmount = 0;
   let result = `Statement for ${invoice.customer}\n`;
 
   for (const perf of invoice.performances) {
-    volumeCredits += volumeCreditsFor(perf);
-
     result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
     totalAmount += amountFor(perf);
   }
+
+  let volumeCredits = 0;
+  for (const perf of invoice.performances) {
+    volumeCredits += volumeCreditsFor(perf);
+  }
+
   result += `Amount owed is ${usd(totalAmount)}\n`;
   result += `You earned ${volumeCredits} credits\n`;
   return result;
