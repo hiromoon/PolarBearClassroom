@@ -38,7 +38,7 @@ module.exports = function statement(invoice, plays) {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(aNumber);
+    }).format(aNumber / 100);
   }
 
   let volumeCredits = 0;
@@ -48,10 +48,10 @@ module.exports = function statement(invoice, plays) {
   for (const perf of invoice.performances) {
     volumeCredits += volumeCreditsFor(perf);
 
-    result += `${playFor(perf).name}: ${usd(amountFor(perf) / 100)} (${perf.audience} seats)\n`;
+    result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
     totalAmount += amountFor(perf);
   }
-  result += `Amount owed is ${usd(totalAmount / 100)}\n`;
+  result += `Amount owed is ${usd(totalAmount)}\n`;
   result += `You earned ${volumeCredits} credits\n`;
   return result;
 };
