@@ -7,6 +7,7 @@ function createStatementData(invoice, plays) {
     return result;
 
     function enrichPerformance(aPerformance) {
+        const calculator = new PerformanceCalculator(aPerformance);
         const result = Object.assign({}, aPerformance);
         // TODO オブジェクト渡してない? copyした方が良いのでは?
         result.play =  playFor(result); 
@@ -61,4 +62,11 @@ function createStatementData(invoice, plays) {
             .reduce((total, p) => total + p.volumeCredits, 0);
     }
 }
+
+class PerformanceCalculator {
+    constructor(aPerformance) {
+        this.performance = aPerformance;
+    }
+}
+
 module.exports = createStatementData;
