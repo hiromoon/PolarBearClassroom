@@ -3,7 +3,7 @@ module.exports = function statement(invoice, plays) {
     return plays[aPerformance.playID];
   }
 
-  function amountFor(aPerformance, play) {
+  function amountFor(aPerformance) {
     let result = 0;
 
     switch (playFor(aPerformance).type) {
@@ -38,7 +38,7 @@ module.exports = function statement(invoice, plays) {
   });
 
   for (const perf of invoice.performances) {
-    const thisAmount = amountFor(perf, playFor(perf));
+    const thisAmount = amountFor(perf);
 
     volumeCredits += Math.max(perf.audience - 30, 0);
     if (playFor(perf).type === 'comedy') volumeCredits += Math.floor(perf.audience / 5);
