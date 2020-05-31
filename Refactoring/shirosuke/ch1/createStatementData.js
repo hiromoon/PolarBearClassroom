@@ -8,12 +8,16 @@ function createStatementData(invoice, plays) {
 
     function enrichPerformance(aPerformance) {
         const result = Object.assign({}, aPerformance);
-        const calculator = new PerformanceCalculator(aPerformance, playFor(result));
+        const calculator = new createPerformanceCalculator(aPerformance, playFor(result));
         // TODO オブジェクト渡してない? copyした方が良いのでは?
         result.play =  calculator.play;
         result.amount = amountFor(result);
         result.volumeCredits = volumeCreditsFor(result);
         return result;
+    }
+
+    function createPerformanceCalculator(aPerformance, aPlay) {
+        return new PerformanceCalculator(aPerformance, aPlay);
     }
 
     function playFor(aPerformance) {
