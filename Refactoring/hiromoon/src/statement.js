@@ -1,4 +1,4 @@
-module.exports = function statement(invoice, plays) {
+function renderPlainText(invoice, plays) {
   function playFor(aPerformance) {
     return plays[aPerformance.playID];
   }
@@ -60,4 +60,8 @@ module.exports = function statement(invoice, plays) {
   result += `Amount owed is ${usd(totalAmount)}\n`;
   result += `You earned ${totalVolumeCredits()} credits\n`;
   return result;
+}
+
+module.exports = function statement(invoice, plays) {
+  return renderPlainText(invoice, plays);
 };
