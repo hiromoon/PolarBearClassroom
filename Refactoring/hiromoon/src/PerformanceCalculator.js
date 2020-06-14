@@ -4,16 +4,12 @@ module.exports = class PerformanceCalculator {
     this.play = aPlay;
   }
 
+  // FIXME: this を使わないと怒られるけど、ここでthisは不要なのでeslintをoff
+  /* eslint-disable */
   get amount() {
-    switch (this.play.type) {
-      case 'tragedy':
-        throw Error('Unexpected call: tragedy.');
-      case 'comedy':
-        throw Error('Unexpected call: comedy.');
-      default:
-        throw new Error(`unknown type: ${this.play.type}`);
-    }
+    throw new Error('サブクラスの責務');
   }
+  /* eslint-enable */
 
   get volumeCredits() {
     let result = 0;
