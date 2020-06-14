@@ -20,19 +20,11 @@ function renderPlainText(data, plays) {
 
 module.exports = function statement(invoice, plays) {
   function totalVolumeCredits(data) {
-    let volumeCredits = 0;
-    for (const perf of data.performances) {
-      volumeCredits += perf.volumeCredits;
-    }
-    return volumeCredits;
+    return data.performances.reduce((total, p) => total + p.volumeCredits, 0);
   }
 
   function totalAmount(data) {
-    let result = 0;
-    for (const perf of data.performances) {
-      result += perf.amount;
-    }
-    return result;
+    return data.performances.reduce((total, p) => total + p.amount, 0);
   }
 
   function volumeCreditsFor(aPerformance) {
