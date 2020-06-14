@@ -50,7 +50,7 @@ function renderPlainText(data, invoice, plays) {
   }
 
   let totalAmount = 0;
-  let result = `Statement for ${invoice.customer}\n`;
+  let result = `Statement for ${data.customer}\n`;
 
   for (const perf of invoice.performances) {
     result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
@@ -64,5 +64,6 @@ function renderPlainText(data, invoice, plays) {
 
 module.exports = function statement(invoice, plays) {
   const statementData = {};
+  statementData.customer = invoice.customer;
   return renderPlainText(statementData, invoice, plays);
 };
