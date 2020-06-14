@@ -10,4 +10,8 @@ module.exports = class ComedyCalculator extends PerformanceCalculator {
 
     return result;
   }
+
+  get volumeCredits() {
+    return super.volumeCredits + Math.floor(this.performance.audience / 5);
+  }
 };
