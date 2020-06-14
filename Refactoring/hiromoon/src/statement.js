@@ -1,14 +1,14 @@
 const createStatementData = require('./createStatementData');
 
-function renderPlainText(data) {
-  function usd(aNumber) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(aNumber / 100);
-  }
+function usd(aNumber) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(aNumber / 100);
+}
 
+function renderPlainText(data) {
   let result = `Statement for ${data.customer}\n`;
 
   for (const perf of data.performances) {
