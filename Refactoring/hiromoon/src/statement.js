@@ -1,8 +1,4 @@
 function renderPlainText(data, plays) {
-  function playFor(aPerformance) {
-    return plays[aPerformance.playID];
-  }
-
   function amountFor(aPerformance) {
     let result = 0;
 
@@ -69,8 +65,13 @@ function renderPlainText(data, plays) {
 }
 
 module.exports = function statement(invoice, plays) {
+  function playFor(aPerformance) {
+    return plays[aPerformance.playID];
+  }
+
   function enrichPerformance(aPerformance) {
     const result = { ...aPerformance };
+    result.play = playFor(aPerformance);
     return result;
   }
 
