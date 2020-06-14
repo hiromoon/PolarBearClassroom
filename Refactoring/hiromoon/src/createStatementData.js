@@ -35,6 +35,10 @@ class PerformanceCalculator {
   }
 }
 
+function createPerformanceCalculator(aPerformance, aPlay) {
+  return new PerformanceCalculator(aPerformance, aPlay);
+}
+
 module.exports = function createStatementData(invoice, plays) {
   function totalVolumeCredits(data) {
     return data.performances.reduce((total, p) => total + p.volumeCredits, 0);
@@ -44,23 +48,12 @@ module.exports = function createStatementData(invoice, plays) {
     return data.performances.reduce((total, p) => total + p.amount, 0);
   }
 
-  function volumeCreditsFor(aPerformance) {
-    let volumeCredits = 0;
-    volumeCredits += Math.max(aPerformance.audience - 30, 0);
-    if (aPerformance.play.type === 'comedy') volumeCredits += Math.floor(aPerformance.audience / 5);
-    return volumeCredits;
-  }
-
   function playFor(aPerformance) {
     return plays[aPerformance.playID];
   }
 
-  function amountFor(aPerformance) {
-    return new PerformanceCalculator(aPerformance, playFor(aPerformance)).amount;
-  }
-
   function enrichPerformance(aPerformance) {
-    const calculator = new PerformanceCalculator(aPerformance, playFor(aPerformance));
+    const calculator = createPerformanceCalculator(aPerformance, playFor(aPerformance));
     const result = { ...aPerformance };
     result.play = calculator.play;
     result.amount = calculator.amount;
