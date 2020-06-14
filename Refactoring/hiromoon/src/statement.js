@@ -43,21 +43,27 @@ function renderPlainText(data, invoice, plays) {
 
   function totalVolumeCredits() {
     let volumeCredits = 0;
-    for (const perf of invoice.performances) {
+    for (const perf of data.performances) {
       volumeCredits += volumeCreditsFor(perf);
     }
     return volumeCredits;
   }
 
-  let totalAmount = 0;
-  let result = `Statement for ${data.customer}\n`;
-
-  for (const perf of invoice.performances) {
-    result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
-    totalAmount += amountFor(perf);
+  function totalAmount() {
+    let result = 0;
+    for (const perf of data.performances) {
+      result += amountFor(perf);
+    }
+    return result;
   }
 
-  result += `Amount owed is ${usd(totalAmount)}\n`;
+  let result = `Statement for ${data.customer}\n`;
+
+  for (const perf of data.performances) {
+    result += `${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
+  }
+
+  result += `Amount owed is ${usd(totalAmount())}\n`;
   result += `You earned ${totalVolumeCredits()} credits\n`;
   return result;
 }
@@ -65,5 +71,6 @@ function renderPlainText(data, invoice, plays) {
 module.exports = function statement(invoice, plays) {
   const statementData = {};
   statementData.customer = invoice.customer;
+  statementData.performances = invoice.performances;
   return renderPlainText(statementData, invoice, plays);
 };
