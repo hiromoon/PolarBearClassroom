@@ -1,4 +1,4 @@
-function renderPlainText(invoice, plays) {
+function renderPlainText(data, invoice, plays) {
   function playFor(aPerformance) {
     return plays[aPerformance.playID];
   }
@@ -63,5 +63,6 @@ function renderPlainText(invoice, plays) {
 }
 
 module.exports = function statement(invoice, plays) {
-  return renderPlainText(invoice, plays);
+  const statementData = {};
+  return renderPlainText(statementData, invoice, plays);
 };
